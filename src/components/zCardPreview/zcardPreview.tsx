@@ -3,7 +3,7 @@ import { QRCodeSVG } from "qrcode.react";
 
 import logo from "../../assets/logo.jpg";
 
-import "./ZCardPreview.css";
+import "./zCardPreview.css";
 
 type ZCardPlan = "MENSAL" | "SEMESTRAL";
 
