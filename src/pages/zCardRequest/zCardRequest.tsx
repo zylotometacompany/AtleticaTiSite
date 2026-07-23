@@ -23,7 +23,7 @@ import {
 
 import ZCardPreview from "../../components/zCardPreview/zcardPreview";
 
-import "./ZCardRequest.css";
+import "./zCardRequest.css";
 import { useCreateZCardRequest } from "../../hooks/useZCardRequest";
 import { toast } from "sonner";
 import { api } from "../../service/api";
