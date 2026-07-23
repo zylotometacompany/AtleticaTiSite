@@ -1,0 +1,346 @@
+.zcard-card {
+  position: relative;
+  isolation: isolate;
+
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+
+  width: min(100%, 500px);
+  min-height: 318px;
+  overflow: hidden;
+  padding: 26px;
+
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 30px;
+
+  color: #ffffff;
+  background:
+    radial-gradient(
+      circle at 82% 13%,
+      rgba(216, 180, 254, 0.24),
+      transparent 29%
+    ),
+    radial-gradient(
+      circle at 10% 92%,
+      rgba(124, 58, 237, 0.22),
+      transparent 34%
+    ),
+    linear-gradient(
+      145deg,
+      #4c1d95 0%,
+      #2e1065 45%,
+      #16061f 100%
+    );
+
+  box-shadow:
+    0 34px 70px rgba(49, 18, 66, 0.28),
+    0 0 44px rgba(124, 58, 237, 0.16);
+}
+
+.zcard-card__effects {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+
+  pointer-events: none;
+}
+
+.zcard-card__effects span:first-child {
+  position: absolute;
+  top: -170px;
+  right: 46px;
+
+  width: 260px;
+  height: 570px;
+
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 50%;
+
+  transform: rotate(-7deg);
+}
+
+.zcard-card__effects span:last-child {
+  position: absolute;
+  right: -80px;
+  bottom: -120px;
+
+  width: 250px;
+  height: 250px;
+
+  border-radius: 50%;
+  background: rgba(168, 85, 247, 0.12);
+
+  filter: blur(32px);
+}
+
+.zcard-card__header,
+.zcard-card__body,
+.zcard-card__footer {
+  position: relative;
+  z-index: 2;
+}
+
+.zcard-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.zcard-card__brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  min-width: 0;
+}
+
+.zcard-card__brand img {
+  display: block;
+  flex: 0 0 auto;
+
+  width: 46px;
+  height: 46px;
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 13px;
+
+  object-fit: cover;
+}
+
+.zcard-card__brand > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  min-width: 0;
+}
+
+.zcard-card__brand span,
+.zcard-card__identity span,
+.zcard-card__identity small,
+.zcard-card__data span {
+  color: rgba(255, 255, 255, 0.5);
+
+  font-size: 0.61rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.zcard-card__brand strong {
+  overflow: hidden;
+
+  color: #ffffff;
+
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zcard-card__badge {
+  flex: 0 0 auto;
+
+  padding: 8px 11px;
+
+  border: 1px solid rgba(216, 180, 254, 0.24);
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.1);
+
+  font-size: 0.59rem;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+
+  backdrop-filter: blur(10px);
+}
+
+.zcard-card__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 24px;
+
+  padding: 34px 0 26px;
+}
+
+.zcard-card__identity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  min-width: 0;
+}
+
+.zcard-card__identity strong {
+  overflow: hidden;
+
+  color: #ffffff;
+
+  font-size: 1.1rem;
+  letter-spacing: 0.045em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zcard-card__identity small {
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zcard-card__photo {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+
+  width: 84px;
+  height: 100px;
+  overflow: hidden;
+
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  border-radius: 20px;
+
+  color: rgba(255, 255, 255, 0.64);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.13),
+      rgba(255, 255, 255, 0.045)
+    );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 16px 30px rgba(0, 0, 0, 0.12);
+}
+
+.zcard-card__photo svg {
+  width: 24px;
+  height: 24px;
+}
+
+.zcard-card__photo img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  object-position: center;
+}
+
+.zcard-card__footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 22px;
+}
+
+.zcard-card__data {
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(24px, 5vw, 52px);
+
+  min-width: 0;
+}
+
+.zcard-card__data > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  min-width: 0;
+}
+
+.zcard-card__data strong {
+  overflow: hidden;
+
+  color: #ffffff;
+
+  font-size: 0.8rem;
+  letter-spacing: 0.045em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zcard-card__qr {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+
+  width: 76px;
+  height: 76px;
+  padding: 7px;
+
+  border-radius: 15px;
+  background: #ffffff;
+
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.18);
+}
+
+.zcard-card__qr svg {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 540px) {
+  .zcard-card {
+    min-height: 286px;
+    padding: 20px;
+
+    border-radius: 24px;
+  }
+
+  .zcard-card__brand img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .zcard-card__brand strong {
+    font-size: 0.92rem;
+  }
+
+  .zcard-card__body {
+    gap: 16px;
+    padding: 26px 0 20px;
+  }
+
+  .zcard-card__identity strong {
+    font-size: 0.94rem;
+  }
+
+  .zcard-card__photo {
+    width: 68px;
+    height: 82px;
+
+    border-radius: 16px;
+  }
+
+  .zcard-card__data {
+    gap: 18px;
+  }
+
+  .zcard-card__qr {
+    width: 62px;
+    height: 62px;
+    padding: 6px;
+  }
+}
+
+@media (max-width: 390px) {
+  .zcard-card__footer {
+    gap: 12px;
+  }
+
+  .zcard-card__data {
+    gap: 12px;
+  }
+
+  .zcard-card__data strong {
+    max-width: 84px;
+  }
+}
