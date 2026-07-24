@@ -77,7 +77,7 @@ function ProductCard({ product, onOpenCart }: ProductCardProps) {
       size: selectedVariant.size,
       price: product.price,
       stock: selectedVariant.stock,
-      imageUrl: product.imageUrl,
+      imageUrl: `${import.meta.env.VITE_API_URL}${product.imageUrl}`,
     });
 
     setWasAdded(true);
@@ -104,8 +104,10 @@ function ProductCard({ product, onOpenCart }: ProductCardProps) {
         </span>
 
         {product.imageUrl ? (
-          <img src={product.imageUrl} alt={product.name} />
-        ) : (
+<img
+  src={`${import.meta.env.VITE_API_URL}${product.imageUrl}`}
+/>
+) : (
           <div className="store-product-placeholder">
             <span>{product.name.charAt(0).toUpperCase()}</span>
           </div>
