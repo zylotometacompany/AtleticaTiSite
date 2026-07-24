@@ -126,13 +126,13 @@ export function Navbar() {
             })}
           </ul>
 
-          <button
+       {/*    <button
             type="button"
             className="navbar__cta"
             onClick={() => handleNavigation("/contato")}
           >
             Fazer parte
-          </button>
+          </button> */}
         </nav>
 
         <button

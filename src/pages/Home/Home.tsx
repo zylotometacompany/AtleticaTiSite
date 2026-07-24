@@ -274,7 +274,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="zcard-section">
+      <section id="zcard" className="zcard-section">
         <div className="zcard-section__effects" aria-hidden="true">
           <span className="zcard-section__glow zcard-section__glow--one" />
           <span className="zcard-section__glow zcard-section__glow--two" />
@@ -449,22 +449,35 @@ function HeroMainSlide({ onNavigate }: { onNavigate: NavigateFunction }) {
         </p>
 
         <div className="home-hero__actions">
-          <button
-            type="button"
-            className="home-button home-button--primary"
-            onClick={() => onNavigate("/contato")}
-          >
-            Fazer parte
-            <FiArrowRight />
-          </button>
+       <button
+  type="button"
+  className="home-button home-button--primary"
+  onClick={() => {
+    document
+      .getElementById("zcard")
+      ?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+  }}
+>
+  Fazer parte
+  <FiArrowRight />
+</button>
 
-          <button
-            type="button"
-            className="home-button home-button--secondary"
-            onClick={() => onNavigate("/sobre")}
-          >
-            Conhecer a Atlética
-          </button>
+         <button
+  type="button"
+  className="home-button home-button--secondary"
+  onClick={() =>
+    window.open(
+      "https://instagram.com/atleticatiumc",
+      "_blank",
+      "noopener,noreferrer",
+    )
+  }
+>
+  Conhecer a Atlética
+</button>
         </div>
 
         <div className="home-hero__stats">
