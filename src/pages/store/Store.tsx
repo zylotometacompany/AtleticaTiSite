@@ -22,7 +22,7 @@ import {
 
 import { useCartStore } from "../../store/useCartStore";
 
-import logo from "../../assets/logo.jpg"
+import logo from "../../assets/logo.jpg";
 const ATLETICA_SLUG = "atletica-ti";
 
 interface ProductCardProps {
@@ -40,6 +40,24 @@ function formatCurrency(value: number) {
     style: "currency",
     currency: "BRL",
   });
+}
+
+function getProductImageUrl(imageUrl?: string | null) {
+  if (!imageUrl) {
+    return "";
+  }
+
+  if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+    return imageUrl;
+  }
+
+  const apiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, "");
+
+  const normalizedImageUrl = imageUrl.startsWith("/")
+    ? imageUrl
+    : `/${imageUrl}`;
+
+  return `${apiUrl}${normalizedImageUrl}`;
 }
 
 function ProductCard({ product, onOpenCart }: ProductCardProps) {
@@ -77,7 +95,7 @@ function ProductCard({ product, onOpenCart }: ProductCardProps) {
       size: selectedVariant.size,
       price: product.price,
       stock: selectedVariant.stock,
-      imageUrl: `${import.meta.env.VITE_API_URL}${product.imageUrl}`,
+      imageUrl: getProductImageUrl(product.imageUrl),
     });
 
     setWasAdded(true);
@@ -104,10 +122,8 @@ function ProductCard({ product, onOpenCart }: ProductCardProps) {
         </span>
 
         {product.imageUrl ? (
-<img
-  src={`${import.meta.env.VITE_API_URL}${product.imageUrl}`}
-/>
-) : (
+          <img src={getProductImageUrl(product.imageUrl)} alt={product.name} />
+        ) : (
           <div className="store-product-placeholder">
             <span>{product.name.charAt(0).toUpperCase()}</span>
           </div>
