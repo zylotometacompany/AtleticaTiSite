@@ -42,22 +42,42 @@ function formatCurrency(value: number) {
   });
 }
 
-function getProductImageUrl(imageUrl?: string | null) {
+function getProductImageUrl(
+  imageUrl?: string | null,
+) {
   if (!imageUrl) {
     return "";
   }
 
-  if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
-    return imageUrl;
+  const apiUrl =
+    import.meta.env.VITE_API_URL?.replace(
+      /\/$/,
+      "",
+    );
+
+  const imagePath = imageUrl
+    .replace(
+      /^https?:\/\/localhost:\d+/,
+      "",
+    )
+    .replace(
+      /^https?:\/\/127\.0\.0\.1:\d+/,
+      "",
+    );
+
+  if (
+    imagePath.startsWith("http://") ||
+    imagePath.startsWith("https://")
+  ) {
+    return imagePath;
   }
 
-  const apiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, "");
+  const normalizedImagePath =
+    imagePath.startsWith("/")
+      ? imagePath
+      : `/${imagePath}`;
 
-  const normalizedImageUrl = imageUrl.startsWith("/")
-    ? imageUrl
-    : `/${imageUrl}`;
-
-  return `${apiUrl}${normalizedImageUrl}`;
+  return `${apiUrl}${normalizedImagePath}`;
 }
 
 function ProductCard({ product, onOpenCart }: ProductCardProps) {
