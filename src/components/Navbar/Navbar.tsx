@@ -11,7 +11,7 @@ import "./Navbar.css";
 const navigation = [
   { label: "Início", path: "/" },
   { label: "Diretoria", path: "/diretoria" },
-  { label: "Eventos", path: "/eventos" },
+ // { label: "Eventos", path: "/eventos" },
   { label: "Loja", path: "/loja" },
 ];
 

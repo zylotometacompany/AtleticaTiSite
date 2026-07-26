@@ -5,6 +5,7 @@ import Events from "./pages/Events/Events";
 import ZCardRequest from "./pages/zCardRequest/zCardRequest";
 import { ProductsPage } from "./pages/store/Store";
 import { CheckoutPage } from "./pages/store/Checkout/Checkout";
+import Diretoria from "./pages/Directors/Diretoria";
 
 
 export default function App() {
@@ -13,6 +14,7 @@ export default function App() {
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
           <Route path="/eventos" element={<Events />} />
+          <Route path="/diretoria" element={<Diretoria/>}/>
           <Route path="/zcard" element={<ZCardRequest/>}/>
           <Route path="/loja" element={<ProductsPage/>}/>
           <Route path="/checkout" element={<CheckoutPage/>}/>
