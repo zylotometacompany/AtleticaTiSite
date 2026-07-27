@@ -20,7 +20,7 @@ import {
   useGetStoreOrder,
 } from "../../../hooks/store/useGetStoreOrder";
 
-import "..Pedido.css";
+import "../Pedido.css";
 
 function formatCurrency(
   value: number,
