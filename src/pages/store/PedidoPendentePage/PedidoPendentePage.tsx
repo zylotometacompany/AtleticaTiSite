@@ -4,7 +4,7 @@ import {
   FiRefreshCw,
   FiShoppingBag,
 } from "react-icons/fi";
-
+import "../Pedido.css";
 import {
   useNavigate,
   useParams,
@@ -14,7 +14,7 @@ import {
   useWaitPayment,
 } from "../../../hooks/store/useWaitPayment";
 
-import "../Pedido.css";
+
 
 function formatCurrency(
   value: number,
