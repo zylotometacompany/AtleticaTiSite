@@ -21,9 +21,9 @@ export default function App() {
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
 
-        <Route path="/eventos" element={<Events />} />
-
         <Route path="/diretoria" element={<Diretoria />} />
+
+        <Route path="/eventos" element={<Events />} />
 
         <Route path="/zcard" element={<ZCardRequest />} />
 
