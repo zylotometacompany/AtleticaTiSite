@@ -596,7 +596,7 @@ export function ProductsPage() {
             </p>
           </header>
 
-          {products.length === 0 ? (
+          {products?.length === 0 ? (
             <div className="store-empty">
               <div className="store-empty-icon">
                 <FiShoppingBag />
@@ -608,7 +608,7 @@ export function ProductsPage() {
             </div>
           ) : (
             <div className="store-product-grid">
-              {products.map((product) => (
+              {products?.map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}
