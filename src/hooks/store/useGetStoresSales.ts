@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
+import { api } from "../../service/api";
 
-import { api } from "../../services/api";
 
 export type StoreSaleStatus =
   | "PENDENTE"
