@@ -28,6 +28,8 @@ import { useCreateZCardRequest } from "../../hooks/useZCardRequest";
 import { toast } from "sonner";
 import { api } from "../../service/api";
 
+import { AxiosError } from "axios";
+
 const courses = [
   {
     name: "Análise e Desenvolvimento de Sistemas",
@@ -258,23 +260,25 @@ export default function ZCardRequest() {
       shouldValidate: true,
     });
 
-    /*
-     * Permite selecionar novamente o mesmo arquivo
-     * caso o usuário queira substituí-lo.
-     */
     event.target.value = "";
   }
 
-  async function submitZCard(data: ZCardRequestData) {
-    try {
-      await createRequest(ZCARD_ATLETICA_SLUG, data);
+ async function submitZCard(data: ZCardRequestData) {
+  try {
+    await createRequest(ZCARD_ATLETICA_SLUG, data);
 
-      setSubmitted(true);
-      reset();
-    } catch {
-     toast.error("erro")
-    }
+    setSubmitted(true);
+    reset();
+  } catch (error) {
+    const err = error as AxiosError<{ message: string }>;
+
+    toast.error(
+      err.response?.data?.message ??
+      err.message ??
+      "Erro ao enviar solicitação."
+    );
   }
+}
 
   if (submitted) {
     return (

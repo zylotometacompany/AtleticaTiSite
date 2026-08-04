@@ -310,7 +310,9 @@ export default function Home() {
                 <FiZap />
                 <div>
                   <strong>Acesso a experiências</strong>
-                  <span>Prioridade em eventos, ações e ativações especiais.</span>
+                  <span>
+                    Prioridade em eventos, ações e ativações especiais.
+                  </span>
                 </div>
               </div>
 
@@ -318,7 +320,9 @@ export default function Home() {
                 <FiStar />
                 <div>
                   <strong>Identidade digital</strong>
-                  <span>Perfil, categoria e benefícios reunidos em um só lugar.</span>
+                  <span>
+                    Perfil, categoria e benefícios reunidos em um só lugar.
+                  </span>
                 </div>
               </div>
 
@@ -449,35 +453,33 @@ function HeroMainSlide({ onNavigate }: { onNavigate: NavigateFunction }) {
         </p>
 
         <div className="home-hero__actions">
-       <button
-  type="button"
-  className="home-button home-button--primary"
-  onClick={() => {
-    document
-      .getElementById("zcard")
-      ?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-  }}
->
-  Fazer parte
-  <FiArrowRight />
-</button>
+          <button
+            type="button"
+            className="home-button home-button--primary"
+            onClick={() => {
+              document.getElementById("zcard")?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+            }}
+          >
+            Fazer parte
+            <FiArrowRight />
+          </button>
 
-         <button
-  type="button"
-  className="home-button home-button--secondary"
-  onClick={() =>
-    window.open(
-      "https://instagram.com/atleticatiumc",
-      "_blank",
-      "noopener,noreferrer",
-    )
-  }
->
-  Conhecer a Atlética
-</button>
+          <button
+            type="button"
+            className="home-button home-button--secondary"
+            onClick={() =>
+              window.open(
+                "https://instagram.com/atleticatiumc",
+                "_blank",
+                "noopener,noreferrer",
+              )
+            }
+          >
+            Conhecer a Atlética
+          </button>
         </div>
 
         <div className="home-hero__stats">
@@ -657,11 +659,15 @@ function PartnersMainSlide({ onNavigate }: { onNavigate: NavigateFunction }) {
             Conhecer parceiros
             <FiArrowRight />
           </button>
-
           <button
             type="button"
             className="home-button home-button--secondary"
-            onClick={() => onNavigate("/contato")}
+            onClick={() =>
+              window.open(
+                "https://wa.me/5511943275755?text=Ol%C3%A1!%20Tenho%20interesse%20em%20me%20tornar%20parceiro%20da%20Atletica.",
+                "_blank",
+              )
+            }
           >
             Ser parceiro
           </button>
@@ -737,13 +743,13 @@ function BoardMainSlide({ onNavigate }: { onNavigate: NavigateFunction }) {
             <FiArrowRight />
           </button>
 
-          <button
+          {/*   <button
             type="button"
             className="home-button home-button--secondary"
             onClick={() => onNavigate("/contato")}
           >
             Falar com a gestão
-          </button>
+          </button> */}
         </div>
       </div>
 
