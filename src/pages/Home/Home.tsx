@@ -628,7 +628,7 @@ function HeroMainSlide({ onNavigate }: { onNavigate: NavigateFunction }) {
   );
 }
 
-function PartnersMainSlide({ onNavigate }: { onNavigate: NavigateFunction }) {
+function PartnersMainSlide({ }: { onNavigate: NavigateFunction }) {
   return (
     <div className="home-hero__container home-main-slide">
       <div className="home-hero__content home-main-slide__copy">
@@ -654,7 +654,12 @@ function PartnersMainSlide({ onNavigate }: { onNavigate: NavigateFunction }) {
           <button
             type="button"
             className="home-button home-button--primary"
-            onClick={() => onNavigate("/parceiros")}
+            onClick={() => {
+              document.getElementById("experiencia")?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+            }}
           >
             Conhecer parceiros
             <FiArrowRight />
