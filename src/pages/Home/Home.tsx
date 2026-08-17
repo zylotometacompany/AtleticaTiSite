@@ -27,7 +27,7 @@ import smokeLogo from "../../assets/smoke-removebg-preview.png";
 import coposLogo from "../../assets/copos-removebg-preview.png";
 import kairon from "../../assets/kairon-removed.png";
 import pablo from "../../assets/pablo-removebg-preview.png";
-
+import araujo from "../../assets/WhatsApp Image 2026-08-16 at 21.09.22.jpeg"
 import "./Home.css";
 import "./Home.carousel.css";
 import "./Home.sections.css";
@@ -88,7 +88,7 @@ const boardMembers = [
   {
     name: "Ana",
     role: "Diretoria de Eventos",
-    // photo: anaPhoto,
+     photo: araujo,
   },
 ];
 
