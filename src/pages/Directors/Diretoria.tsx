@@ -8,9 +8,10 @@ import { useViewTransitionNavigate } from "../../hooks/useViewTransitionNavigate
 
 import kairon from "../../assets/kairon-removed.png";
 import pablo from "../../assets/pablo-removebg-preview.png";
-import araujo from "../../assets/ana.png"
+import araujo from "../../assets/WhatsApp Image 2026-08-16 at 21.09.22.jpeg"
 import bianca from "../../assets/bia.png"
 import isabela from "../../assets/WhatsApp_Image_2026-07-24_at_10.17.13-removebg-preview.png"
+import livia from "../../assets/WhatsApp Image 2026-08-15 at 18.59.57.jpeg"
 
 import "./Diretoria.css";
 
@@ -59,6 +60,12 @@ const commercialDirectors: BoardMember[] = [
     name: "Isabela Rocheto",
     role: "Diretora Comercial",
       photo: isabela,
+
+  },
+   {
+    name: "Lívia",
+    role: "Secretaria",
+      photo: livia,
 
   },
 ];
