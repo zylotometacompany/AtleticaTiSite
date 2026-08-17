@@ -302,7 +302,13 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 34px;
 
-  background: transparent;
+  background: transparent
+    radial-gradient(
+      circle at 0% 100%,
+      rgba(124, 58, 237, 0.13),
+      transparent 38%
+    ),
+    linear-gradient(145deg, #421753, #210a2c 72%);
 
   color: #ffffff;
 
