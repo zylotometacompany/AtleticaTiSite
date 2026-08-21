@@ -12,8 +12,8 @@ const navigation = [
   { label: "Início", path: "/" },
   { label: "Diretoria", path: "/diretoria" },
  // { label: "Eventos", path: "/eventos" },
-  { label: "Loja", path: "/loja" },
-];
+/*   { label: "Loja", path: "/loja" },
+ */];
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
