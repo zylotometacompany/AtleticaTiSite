@@ -1,8 +1,4 @@
-import {
-  useMemo,
-  useState,
-  type FormEvent,
-} from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 import {
   FiArrowLeft,
@@ -10,128 +6,148 @@ import {
   FiCheck,
   FiCreditCard,
   FiLock,
-  FiMail,
-  FiPhone,
   FiShoppingBag,
-  FiUser,
 } from "react-icons/fi";
 
-import {
-  useNavigate,
-  useParams,
-} from "react-router-dom";
-
-
+import { useNavigate } from "react-router-dom";
 
 import "./Checkout.css";
+
 import { useCreateCheckout } from "../../../hooks/useCreateCheckout";
+
 import { useCartStore } from "../../../store/useCartStore";
+import { useCompradorAuth } from "../../../hooks/store/comprador/useCompradorAuth";
+
+const MAX_ITEMS_PER_CHECKOUT = 5;
 
 function formatCurrency(value: number) {
-  return new Intl.NumberFormat(
-    "pt-BR",
-    {
-      style: "currency",
-      currency: "BRL",
-    },
-  ).format(value);
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(value);
 }
 
 export function CheckoutPage() {
-  const { atleticaSlug = "" } =
-    useParams();
-
   const navigate = useNavigate();
 
-  const cartItems = useCartStore(
-    (state) => state.items,
-  );
+  const cartItems = useCartStore((state) => state.items);
 
-  const {
-    buy,
-    isCreatingCheckout,
-    error,
-  } = useCreateCheckout();
+  const { buy, isCreatingCheckout, error } = useCreateCheckout();
 
-  const [name, setName] =
-    useState("");
+  const { getStoredComprador, me } = useCompradorAuth();
 
-  const [email, setEmail] =
-    useState("");
+  const [comprador, setComprador] = useState(getStoredComprador());
 
-  const [phone, setPhone] =
-    useState("");
+  const [isLoadingComprador, setIsLoadingComprador] = useState(true);
 
-  const [rgm, setRgm] =
-    useState("");
+  /*
+   * CARREGA O COMPRADOR
+   * AUTENTICADO
+   */
+
+  useEffect(() => {
+    async function loadComprador() {
+      try {
+        const currentComprador = await me();
+
+        setComprador(currentComprador);
+      } catch {
+        /*
+         * Se o token estiver inválido
+         * ou expirado, volta para login.
+         */
+
+        navigate("/login", {
+          replace: true,
+
+          state: {
+            from: "/checkout",
+          },
+        });
+      } finally {
+        setIsLoadingComprador(false);
+      }
+    }
+
+    loadComprador();
+  }, [me, navigate]);
+
+  /*
+   * TOTAL DE ITENS
+   */
 
   const totalItems = useMemo(() => {
-    return cartItems.reduce(
-      (sum, item) =>
-        sum + item.quantity,
-      0,
-    );
+    return cartItems.reduce((sum, item) => sum + item.quantity, 0);
   }, [cartItems]);
+
+  /*
+   * SUBTOTAL VISUAL
+   *
+   * O BACKEND CONTINUA
+   * SENDO A FONTE REAL
+   * DO PREÇO.
+   */
 
   const subtotal = useMemo(() => {
-    return cartItems.reduce(
-      (sum, item) => {
-        return (
-          sum +
-          item.price *
-            item.quantity
-        );
-      },
-      0,
-    );
+    return cartItems.reduce((sum, item) => {
+      return sum + item.price * item.quantity;
+    }, 0);
   }, [cartItems]);
 
-  function handleBackToStore() {
-    if (atleticaSlug) {
-      navigate(
-        `/${atleticaSlug}/produtos`,
-      );
+  const hasExceededItemLimit = totalItems > MAX_ITEMS_PER_CHECKOUT;
 
+  function handleBackToStore() {
+    navigate("/loja");
+  }
+
+  /*
+   * FINALIZA CHECKOUT
+   */
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (cartItems.length === 0) {
       return;
     }
 
-    navigate(-1);
-  }
+    if (hasExceededItemLimit) {
+      return;
+    }
 
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>,
-  ) {
-    event.preventDefault();
+    if (!comprador) {
+      navigate("/login", {
+        state: {
+          from: "/checkout",
+        },
+      });
 
-    if (
-     
-      cartItems.length === 0
-    ) {
       return;
     }
 
     try {
-     await buy(atleticaSlug, {
-  customer: {
-    name: name.trim(),
-    email: email.trim(),
-    phone: phone.trim(),
-    rgm: rgm.trim(),
-  },
+      await buy({
+        items: cartItems.map((item) => ({
+          productId: item.productId,
 
-  items: cartItems.map(
-    (item) => ({
-      productId: item.productId,
-      variantId: item.variantId,
-      quantity: item.quantity,
-    }),
-  ),
-});
+          variantId: item.variantId,
+
+          quantity: item.quantity,
+        })),
+      });
     } catch {
-      // O hook useCreateCheckout
-      // controla o erro.
+      /*
+       * O hook
+       * useCreateCheckout
+       * controla a mensagem
+       * de erro.
+       */
     }
   }
+
+  /*
+   * CARRINHO VAZIO
+   */
 
   if (cartItems.length === 0) {
     return (
@@ -143,18 +159,11 @@ export function CheckoutPage() {
             <FiShoppingBag />
           </div>
 
-          <span className="checkout-eyebrow">
-            Atlética T.I. Store
-          </span>
+          <span className="checkout-eyebrow">Atlética T.I. Store</span>
 
-          <h1>
-            Seu carrinho está vazio
-          </h1>
+          <h1>Seu carrinho está vazio</h1>
 
-          <p>
-            Adicione algum produto antes
-            de iniciar o pagamento.
-          </p>
+          <p>Adicione algum produto antes de iniciar o pagamento.</p>
 
           <button
             type="button"
@@ -162,13 +171,42 @@ export function CheckoutPage() {
             onClick={handleBackToStore}
           >
             <FiArrowLeft />
-
             Voltar para a loja
           </button>
         </section>
       </main>
     );
   }
+
+  /*
+   * CARREGANDO COMPRADOR
+   */
+
+  if (isLoadingComprador) {
+    return (
+      <main className="checkout-page">
+        <div className="checkout-page-grid" />
+
+        <section className="checkout-empty">
+          <div className="checkout-empty-icon">
+            <FiLock />
+          </div>
+
+          <span className="checkout-eyebrow">Atlética T.I. Store</span>
+
+          <h1>Carregando sua conta</h1>
+
+          <p>Estamos verificando seus dados antes de continuar o checkout.</p>
+
+          <span className="checkout-spinner checkout-page-spinner" />
+        </section>
+      </main>
+    );
+  }
+
+  /*
+   * CHECKOUT
+   */
 
   return (
     <main className="checkout-page">
@@ -181,25 +219,20 @@ export function CheckoutPage() {
           onClick={handleBackToStore}
         >
           <FiArrowLeft />
-
           Voltar para a loja
         </button>
 
         <header className="checkout-header">
           <div className="checkout-header-content">
-            <span className="checkout-eyebrow">
-              Atlética T.I. Store
-            </span>
+            <span className="checkout-eyebrow">Atlética T.I. Store</span>
 
             <h1>
-              Finalizar{" "}
-              <em>compra.</em>
+              Finalizar <em>compra.</em>
             </h1>
 
             <p>
-              Revise os produtos e
-              informe os dados necessários
-              para continuar.
+              Revise seu pedido e confirme os dados da sua conta antes de
+              continuar para o pagamento.
             </p>
           </div>
 
@@ -209,62 +242,53 @@ export function CheckoutPage() {
             </span>
 
             <div>
-              <strong>
-                Pagamento seguro
-              </strong>
+              <strong>Pagamento seguro</strong>
 
-              <span>
-                Processado pelo Mercado Pago
-              </span>
+              <span>Processado pelo Mercado Pago</span>
             </div>
           </div>
         </header>
 
-        <div className="checkout-layout">
+        <form className="checkout-layout" onSubmit={handleSubmit}>
+          {/*
+           * RESUMO DO PEDIDO
+           */}
+
           <section className="checkout-card checkout-order-card">
             <div className="checkout-card-header">
-              <span className="checkout-section-number">
-                01
-              </span>
+              <span className="checkout-section-number">01</span>
 
               <div>
-                <h2>
-                  Resumo do pedido
-                </h2>
+                <h2>Resumo do pedido</h2>
 
                 <p>
-                  {totalItems}{" "}
-                  {totalItems === 1
-                    ? "item"
-                    : "itens"}{" "}
-                  no carrinho
+                  {totalItems} de {MAX_ITEMS_PER_CHECKOUT} itens permitidos
                 </p>
               </div>
             </div>
 
+            {hasExceededItemLimit && (
+              <div className="checkout-error checkout-limit-error" role="alert">
+                <strong>!</strong>
+
+                <p>
+                  É permitido no máximo {MAX_ITEMS_PER_CHECKOUT} itens por
+                  compra. Remova algum item para continuar.
+                </p>
+              </div>
+            )}
+
             <div className="checkout-items">
               {cartItems.map((item) => {
-                const itemTotal =
-                  item.price *
-                  item.quantity;
+                const itemTotal = item.price * item.quantity;
 
                 return (
-                  <article
-                    className="checkout-item"
-                    key={item.variantId}
-                  >
+                  <article className="checkout-item" key={item.variantId}>
                     <div className="checkout-item-image">
                       {item.imageUrl ? (
-                        <img
-                          src={item.imageUrl}
-                          alt={item.name}
-                        />
+                        <img src={item.imageUrl} alt={item.name} />
                       ) : (
-                        <span>
-                          {item.name
-                            .charAt(0)
-                            .toUpperCase()}
-                        </span>
+                        <span>{item.name.charAt(0).toUpperCase()}</span>
                       )}
                     </div>
 
@@ -275,41 +299,28 @@ export function CheckoutPage() {
                             Produto oficial
                           </span>
 
-                          <h3>
-                            {item.name}
-                          </h3>
+                          <h3>{item.name}</h3>
 
                           <div className="checkout-item-details">
                             <span>
                               Tamanho
-                              <strong>
-                                {item.size}
-                              </strong>
+                              <strong>{item.size}</strong>
                             </span>
 
                             <span>
                               Quantidade
-                              <strong>
-                                {
-                                  item.quantity
-                                }
-                              </strong>
+                              <strong>{item.quantity}</strong>
                             </span>
                           </div>
                         </div>
 
                         <strong className="checkout-item-price">
-                          {formatCurrency(
-                            itemTotal,
-                          )}
+                          {formatCurrency(itemTotal)}
                         </strong>
                       </div>
 
                       <span className="checkout-unit-price">
-                        {formatCurrency(
-                          item.price,
-                        )}{" "}
-                        por unidade
+                        {formatCurrency(item.price)} por unidade
                       </span>
                     </div>
                   </article>
@@ -319,175 +330,109 @@ export function CheckoutPage() {
 
             <div className="checkout-summary">
               <div className="checkout-summary-row">
-                <span>
-                  Subtotal
-                </span>
+                <span>Subtotal</span>
 
-                <strong>
-                  {formatCurrency(
-                    subtotal,
-                  )}
-                </strong>
+                <strong>{formatCurrency(subtotal)}</strong>
               </div>
 
               <div className="checkout-summary-row">
-                <span>
-                  Taxa de pagamento
-                </span>
+                <span>Taxa de pagamento</span>
 
-                <strong className="checkout-free">
-                  Grátis
-                </strong>
+                <strong className="checkout-free">Grátis</strong>
               </div>
 
               <div className="checkout-summary-total">
                 <div>
-                  <span>
-                    Total
-                  </span>
+                  <span>Total</span>
 
-                  <small>
-                    Valor final confirmado
-                    pelo servidor
-                  </small>
+                  <small>Valor final confirmado pelo servidor</small>
                 </div>
 
-                <strong>
-                  {formatCurrency(
-                    subtotal,
-                  )}
-                </strong>
+                <strong>{formatCurrency(subtotal)}</strong>
               </div>
             </div>
           </section>
 
+          {/*
+           * COMPRADOR LOGADO
+           */}
+
           <section className="checkout-card checkout-form-card">
             <div className="checkout-card-header">
-              <span className="checkout-section-number">
-                02
-              </span>
+              <span className="checkout-section-number">02</span>
 
               <div>
-                <h2>
-                  Dados do comprador
-                </h2>
+                <h2>Dados do comprador</h2>
 
-                <p>
-                  Informe os dados para
-                  registrar o pedido.
-                </p>
+                <p>Esta compra será vinculada à sua conta.</p>
               </div>
             </div>
 
-            <form
-              className="checkout-form"
-              onSubmit={handleSubmit}
-            >
-              <div className="checkout-field">
-                <label htmlFor="checkout-name">
-                  Nome completo
-                </label>
+            <div className="checkout-form">
+              <div className="checkout-buyer-profile">
+                <div className="checkout-buyer-avatar">
+                  {comprador?.name?.charAt(0).toUpperCase() ?? "U"}
+                </div>
 
-                <div className="checkout-input-wrapper">
-                  <FiUser />
+                <div className="checkout-buyer-main">
+                  <span className="checkout-buyer-label">Comprador</span>
 
-                  <input
-                    id="checkout-name"
-                    type="text"
-                    value={name}
-                    onChange={(event) =>
-                      setName(
-                        event.target.value,
-                      )
-                    }
-                    placeholder="Digite seu nome completo"
-                    autoComplete="name"
-                    required
-                  />
+                  <strong className="checkout-buyer-name">
+                    {comprador?.name ?? "-"}
+                  </strong>
+
+                  <span className="checkout-buyer-email">
+                    {comprador?.email ?? "-"}
+                  </span>
+                </div>
+
+                <div className="checkout-buyer-verified">
+                  <FiCheck />
+
+                  <span>Identificado</span>
                 </div>
               </div>
 
-              <div className="checkout-field">
-                <label htmlFor="checkout-email">
-                  E-mail
-                </label>
+              <div className="checkout-buyer-data">
+                <div className="checkout-buyer-data-item">
+                  <span>CPF</span>
 
-                <div className="checkout-input-wrapper">
-                  <FiMail />
-
-                  <input
-                    id="checkout-email"
-                    type="email"
-                    value={email}
-                    onChange={(event) =>
-                      setEmail(
-                        event.target.value,
-                      )
-                    }
-                    placeholder="nome@email.com"
-                    autoComplete="email"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="checkout-form-grid">
-                <div className="checkout-field">
-                  <label htmlFor="checkout-phone">
-                    Telefone
-                  </label>
-
-                  <div className="checkout-input-wrapper">
-                    <FiPhone />
-
-                    <input
-                      id="checkout-phone"
-                      type="tel"
-                      value={phone}
-                      onChange={(event) =>
-                        setPhone(
-                          event.target.value,
-                        )
-                      }
-                      placeholder="(11) 99999-9999"
-                      autoComplete="tel"
-                    />
-                  </div>
+                  <strong>{comprador?.cpf ?? "-"}</strong>
                 </div>
 
-                <div className="checkout-field">
-                  <label htmlFor="checkout-rgm">
-                    RGM
-                  </label>
+                <div className="checkout-buyer-data-item">
+                  <span>RGM</span>
 
-                  <div className="checkout-input-wrapper">
-                    <span className="checkout-rgm-icon">
-                      ID
-                    </span>
+                  <strong>{comprador?.rgm ?? "-"}</strong>
+                </div>
 
-                    <input
-                      id="checkout-rgm"
-                      type="text"
-                      value={rgm}
-                      onChange={(event) =>
-                        setRgm(
-                          event.target.value,
-                        )
-                      }
-                      placeholder="Digite seu RGM"
-                    />
-                  </div>
+                <div className="checkout-buyer-data-item checkout-buyer-course">
+                  <span>Curso</span>
+
+                  <strong>{comprador?.curso ?? "-"}</strong>
+                </div>
+
+                <div className="checkout-buyer-data-item">
+                  <span>Semestre</span>
+
+                  <strong>
+                    {comprador?.semestre ? `${comprador.semestre}º` : "-"}
+                  </strong>
+                </div>
+
+                <div className="checkout-buyer-data-item">
+                  <span>Telefone</span>
+
+                  <strong>{comprador?.phone ?? "-"}</strong>
                 </div>
               </div>
 
               {error && (
                 <div
-                  className="checkout-error"
+                  className="checkout-error checkout-payment-error"
                   role="alert"
                 >
-                  <strong>
-                    !
-                  </strong>
+                  <strong>!</strong>
 
                   <p>{error}</p>
                 </div>
@@ -499,50 +444,44 @@ export function CheckoutPage() {
                 </span>
 
                 <div>
-                  <strong>
-                    Checkout Mercado Pago
-                  </strong>
+                  <strong>Checkout Mercado Pago</strong>
 
-                  <p>
-                    O pagamento será
-                    concluído em ambiente
-                    protegido.
-                  </p>
+                  <p>O pagamento será concluído em ambiente protegido.</p>
                 </div>
 
                 <FiCheck className="checkout-payment-check" />
               </div>
 
-<button
-  type="submit"
-  className="checkout-submit-button"
-  disabled={
-    isCreatingCheckout ||
-    cartItems.length === 0
-  }
->
-  <span>
-    {isCreatingCheckout
-      ? "Preparando pagamento..."
-      : `Pagar ${formatCurrency(
-          subtotal,
-        )}`}
-  </span>
+              <button
+                type="submit"
+                className="checkout-submit-button"
+                disabled={
+                  isCreatingCheckout ||
+                  cartItems.length === 0 ||
+                  hasExceededItemLimit ||
+                  !comprador
+                }
+              >
+                <span>
+                  {isCreatingCheckout
+                    ? "Preparando pagamento..."
+                    : `Pagar ${formatCurrency(subtotal)}`}
+                </span>
 
-  {isCreatingCheckout ? (
-    <span className="checkout-spinner" />
-  ) : (
-    <FiArrowRight />
-  )}
-</button>
+                {isCreatingCheckout ? (
+                  <span className="checkout-spinner" />
+                ) : (
+                  <FiArrowRight />
+                )}
+              </button>
+
               <p className="checkout-terms">
-                Ao continuar, os dados
-                serão utilizados somente
-                para processar este pedido.
+                Ao continuar, esta compra será vinculada à sua conta e o
+                pagamento será processado pelo Mercado Pago.
               </p>
-            </form>
+            </div>
           </section>
-        </div>
+        </form>
       </div>
     </main>
   );
