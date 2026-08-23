@@ -44,8 +44,8 @@ export default function App() {
 
         <Route path="/zcard" element={<ZCardRequest />} />
 
-      {/*   <Route path="/loja" element={<ProductsPage />} />
- */}
+        <Route path="/loja" element={<ProductsPage />} />
+
         {/*
          * AUTENTICAÇÃO
          * DO COMPRADOR
