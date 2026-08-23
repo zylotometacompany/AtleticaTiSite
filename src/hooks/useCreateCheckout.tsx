@@ -28,11 +28,17 @@ interface CreateCheckoutResponse {
   checkoutUrl: string;
 }
 
+interface CheckoutErrorResponse {
+  message?: string;
+  error?: string;
+  retryAfter?: number;
+}
+
 const MAX_ITEMS_PER_CHECKOUT = 5;
 
 const COMPRADOR_TOKEN_KEY = "@atletica-ti-client:token";
-export const COMPRADOR_USER_KEY = "@atletica-ti-client:user";
 
+export const COMPRADOR_USER_KEY = "@atletica-ti-client:user";
 
 export function useCreateCheckout() {
   const [isCreatingCheckout, setIsCreatingCheckout] = useState(false);
@@ -67,6 +73,7 @@ export function useCreateCheckout() {
 
       /*
        * LIMITE DE 5 ITENS
+       * NO CARRINHO
        */
 
       const totalItems = payload.items.reduce(
@@ -118,27 +125,54 @@ export function useCreateCheckout() {
         const requestError = error as {
           response?: {
             status?: number;
-
-            data?: {
-              message?: string;
-              error?: string;
-            };
+            data?: CheckoutErrorResponse;
           };
         };
 
-        message =
-          requestError.response?.data?.message ??
-          requestError.response?.data?.error ??
-          message;
+        const status = requestError.response?.status;
+
+        const responseData = requestError.response?.data;
+
+        /*
+         * RATE LIMIT
+         *
+         * Mais de 5 tentativas
+         * de checkout na janela
+         * configurada no backend.
+         */
+
+        if (status === 429) {
+          message =
+            responseData?.message ??
+            "Atividade incomum detectada. O acesso ao checkout foi temporariamente bloqueado. Em caso de uso indevido ou tentativa de comprometimento do serviço, poderão ser adotadas as medidas técnicas e legais cabíveis.";
+        } else if (status === 401) {
 
         /*
          * TOKEN INVÁLIDO
          * OU EXPIRADO
          */
-
-        if (requestError.response?.status === 401) {
           localStorage.removeItem(COMPRADOR_TOKEN_KEY);
-  localStorage.removeItem(COMPRADOR_USER_KEY);
+
+          localStorage.removeItem(COMPRADOR_USER_KEY);
+
+          message =
+            responseData?.message ??
+            "Sua sessão expirou. Entre novamente para continuar.";
+        } else if (status === 403) {
+
+        /*
+         * SEM PERMISSÃO
+         */
+          message =
+            responseData?.message ??
+            "Você não possui permissão para realizar esta operação.";
+        } else {
+
+        /*
+         * OUTROS ERROS
+         * DO BACKEND
+         */
+          message = responseData?.message ?? responseData?.error ?? message;
         }
       } else if (error instanceof Error) {
         message = error.message;
@@ -157,7 +191,11 @@ export function useCreateCheckout() {
       const checkout = await createCheckout(payload);
 
       if (!checkout.checkoutUrl) {
-        throw new Error("O link de pagamento não foi retornado.");
+        const message = "O link de pagamento não foi retornado.";
+
+        setError(message);
+
+        throw new Error(message);
       }
 
       window.location.assign(checkout.checkoutUrl);
@@ -165,9 +203,14 @@ export function useCreateCheckout() {
     [createCheckout],
   );
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
     createCheckout,
     buy,
+    clearError,
     isCreatingCheckout,
     error,
   };
