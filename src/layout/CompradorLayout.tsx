@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
-import { FiHome, FiLogOut, FiShoppingBag, FiUser } from "react-icons/fi";
+import { FiHome, FiLogOut, FiShoppingBag } from "react-icons/fi";
 
 import "./CompradorLayout.css";
 import { useCompradorAuth } from "../hooks/store/comprador/useCompradorAuth";
@@ -54,7 +54,7 @@ export function CompradorLayout() {
             Minhas compras
           </NavLink>
 
-          <NavLink
+         {/*  <NavLink
             to="/minha-conta/perfil"
             className={({ isActive }) =>
               isActive ? "buyer-sidebar-link active" : "buyer-sidebar-link"
@@ -62,7 +62,7 @@ export function CompradorLayout() {
           >
             <FiUser />
             Meu perfil
-          </NavLink>
+          </NavLink> */}
 
           <NavLink to="/loja" className="buyer-sidebar-link">
             <FiHome />

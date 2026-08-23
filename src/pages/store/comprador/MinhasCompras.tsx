@@ -1,37 +1,16 @@
+import { useEffect } from "react";
+
 import {
-  FiArrowRight,
   FiCheckCircle,
   FiClock,
   FiPackage,
   FiShoppingBag,
 } from "react-icons/fi";
 
+import { useNavigate } from "react-router-dom";
+
 import "./MinhasCompras.css";
-
-interface Compra {
-  id: string;
-  status: string;
-  total: number;
-  createdAt: string;
-  items: number;
-}
-
-const compras: Compra[] = [
-  {
-    id: "82F1A9",
-    status: "PAGA",
-    total: 159.9,
-    createdAt: "21/08/2026",
-    items: 2,
-  },
-  {
-    id: "71D2B4",
-    status: "PRONTA_PARA_RETIRADA",
-    total: 79.9,
-    createdAt: "15/08/2026",
-    items: 1,
-  },
-];
+import { useCompradorPurchases } from "../../../hooks/store/comprador/useCompradorPurchase";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
@@ -40,9 +19,20 @@ function formatCurrency(value: number) {
   }).format(value);
 }
 
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
 function getStatusLabel(status: string) {
   switch (status) {
     case "PAGA":
+    case "APROVADA":
       return "Pagamento aprovado";
 
     case "EM_SEPARACAO":
@@ -57,6 +47,12 @@ function getStatusLabel(status: string) {
     case "PENDENTE":
       return "Pagamento pendente";
 
+    case "CANCELADA":
+      return "Pedido cancelado";
+
+    case "FALHA":
+      return "Pagamento recusado";
+
     default:
       return status;
   }
@@ -66,6 +62,7 @@ function getStatusIcon(status: string) {
   switch (status) {
     case "ENTREGUE":
     case "PAGA":
+    case "APROVADA":
       return <FiCheckCircle />;
 
     case "PENDENTE":
@@ -76,7 +73,62 @@ function getStatusIcon(status: string) {
   }
 }
 
+function getTotalItems(
+  items: {
+    quantity: number;
+  }[],
+) {
+  return items.reduce((total, item) => total + item.quantity, 0);
+}
+
 export default function MinhasCompras() {
+  const navigate = useNavigate();
+
+  const { purchases, loadPurchases, isLoading, error } =
+    useCompradorPurchases();
+
+  useEffect(() => {
+    loadPurchases().catch(() => {
+      /*
+       * O hook já controla
+       * a mensagem de erro.
+       */
+    });
+  }, [loadPurchases]);
+
+  const totalSpent = purchases.reduce(
+    (total, purchase) => total + Number(purchase.total),
+    0,
+  );
+
+  if (isLoading) {
+    return (
+      <section className="purchases-page">
+        <header className="purchases-header">
+          <div>
+            <span className="purchases-eyebrow">Minha conta</span>
+
+            <h1>
+              Minhas <em>compras.</em>
+            </h1>
+
+            <p>Consulte seus pedidos, pagamentos e status de retirada.</p>
+          </div>
+
+          <div className="purchases-header-icon">
+            <FiShoppingBag />
+          </div>
+        </header>
+
+        <div className="purchases-loading">
+          <span className="purchases-spinner" />
+
+          <p>Carregando suas compras...</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="purchases-page">
       <header className="purchases-header">
@@ -95,69 +147,145 @@ export default function MinhasCompras() {
         </div>
       </header>
 
+      {error && (
+        <div className="purchases-error" role="alert">
+          <strong>Não foi possível carregar suas compras.</strong>
+
+          <p>{error}</p>
+
+          <button type="button" onClick={() => loadPurchases()}>
+            Tentar novamente
+          </button>
+        </div>
+      )}
+
       <div className="purchases-stats">
         <article>
           <span>Pedidos realizados</span>
 
-          <strong>{compras.length}</strong>
+          <strong>{purchases.length}</strong>
         </article>
 
         <article>
           <span>Total em compras</span>
 
-          <strong>
-            {formatCurrency(
-              compras.reduce((total, compra) => total + compra.total, 0),
-            )}
-          </strong>
+          <strong>{formatCurrency(totalSpent)}</strong>
         </article>
       </div>
 
       <div className="purchases-list">
-        {compras.length === 0 ? (
+        {purchases.length === 0 ? (
           <div className="purchases-empty">
             <FiShoppingBag />
 
             <h2>Nenhuma compra encontrada</h2>
 
             <p>Quando você realizar uma compra, ela aparecerá aqui.</p>
+
+            <button
+              type="button"
+              className="purchases-store-button"
+              onClick={() => navigate("/loja")}
+            >
+              Ir para a loja
+            </button>
           </div>
         ) : (
-          compras.map((compra) => (
-            <article key={compra.id} className="purchase-card">
-              <div className="purchase-card-main">
-                <div className="purchase-icon">
-                  {getStatusIcon(compra.status)}
+          purchases.map((purchase) => {
+            const totalItems = getTotalItems(purchase.items);
+
+            return (
+              <article
+                key={purchase.id}
+                className="purchase-card purchase-card-expanded"
+              >
+                <div className="purchase-card-header">
+                  <div className="purchase-card-main">
+                    <div className="purchase-icon">
+                      {getStatusIcon(purchase.status)}
+                    </div>
+
+                    <div>
+                      <span className="purchase-label">Pedido</span>
+
+                      <h2>#{purchase.id.slice(0, 8).toUpperCase()}</h2>
+
+                      <p>{formatDate(purchase.createdAt)}</p>
+                    </div>
+                  </div>
+
+                  <div className="purchase-status-area">
+                    <span
+                      className={`purchase-status ${purchase.status.toLowerCase()}`}
+                    >
+                      {getStatusLabel(purchase.status)}
+                    </span>
+
+                    <strong>{formatCurrency(Number(purchase.total))}</strong>
+
+                    <small>
+                      {totalItems} {totalItems === 1 ? "item" : "itens"}
+                    </small>
+                  </div>
                 </div>
 
-                <div>
-                  <span className="purchase-label">Pedido</span>
+                <div className="purchase-items-list">
+                  {purchase.items.map((item) => (
+                    <div key={item.id} className="purchase-item-row">
+                      <div className="purchase-item-main">
+                        <span className="purchase-item-icon">
+                          <FiPackage />
+                        </span>
 
-                  <h2>#{compra.id}</h2>
+                        <div>
+                          <strong>{item.product.name}</strong>
 
-                  <p>
-                    {compra.createdAt} • {compra.items}{" "}
-                    {compra.items === 1 ? "item" : "itens"}
-                  </p>
+                          <div className="purchase-item-meta">
+                            <span>
+                              Tamanho{" "}
+                              <strong>{item.productVariant.size}</strong>
+                            </span>
+
+                            <span>
+                              Quantidade <strong>{item.quantity}</strong>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="purchase-item-price">
+                        <span>
+                          {formatCurrency(Number(item.unitPrice))} cada
+                        </span>
+
+                        <strong>{formatCurrency(Number(item.subtotal))}</strong>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
 
-              <div className="purchase-status-area">
-                <span
-                  className={`purchase-status ${compra.status.toLowerCase()}`}
-                >
-                  {getStatusLabel(compra.status)}
-                </span>
+                <div className="purchase-card-footer">
+                  <div>
+                    <span>Data da compra</span>
 
-                <strong>{formatCurrency(compra.total)}</strong>
-              </div>
+                    <strong>{formatDate(purchase.createdAt)}</strong>
+                  </div>
 
-              <button type="button" className="purchase-details">
-                Ver pedido
-                <FiArrowRight />
-              </button>
-            </article>
-          ))
+                  <div>
+                    <span>Status</span>
+
+                    <strong>{getStatusLabel(purchase.status)}</strong>
+                  </div>
+
+                  <div>
+                    <span>Total do pedido</span>
+
+                    <strong>{formatCurrency(Number(purchase.total))}</strong>
+                  </div>
+                </div>
+              </article>
+            );
+          })
         )}
       </div>
     </section>

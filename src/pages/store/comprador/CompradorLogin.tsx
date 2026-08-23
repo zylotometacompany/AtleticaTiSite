@@ -7,12 +7,14 @@ import {
   FiMail,
   FiShield,
   FiShoppingBag,
+  FiUser,
   FiUserPlus,
 } from "react-icons/fi";
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import "./CompradorAuth.css";
+
 import { useCompradorAuth } from "../../../hooks/store/comprador/useCompradorAuth";
 
 interface LocationState {
@@ -71,15 +73,17 @@ export function CompradorLoginPage() {
 
         <div className="buyer-auth-layout">
           <section className="buyer-auth-hero">
-            <span className="buyer-auth-eyebrow">Atlética T.I. Store</span>
+            <span className="buyer-auth-eyebrow">
+              Atlética T.I. • Sua conta
+            </span>
 
             <h1>
-              Continue sua <em>compra.</em>
+              Bem-vindo <em>de volta.</em>
             </h1>
 
             <p className="buyer-auth-description">
-              Entre na sua conta para continuar o checkout e acompanhar seus
-              pedidos.
+              Acesse sua conta para acompanhar seus pedidos, consultar suas
+              compras e continuar conectado à Atlética T.I.
             </p>
 
             <div className="buyer-auth-benefits">
@@ -91,21 +95,24 @@ export function CompradorLoginPage() {
                 <div>
                   <strong>Seus pedidos</strong>
 
-                  <p>Todas as suas compras ficam vinculadas à sua conta.</p>
+                  <p>
+                    Consulte suas compras, pagamentos e o status dos seus
+                    pedidos.
+                  </p>
                 </div>
               </div>
 
               <div className="buyer-auth-benefit">
                 <span>
-                  <FiShield />
+                  <FiUser />
                 </span>
 
                 <div>
-                  <strong>Compra protegida</strong>
+                  <strong>Sua conta</strong>
 
                   <p>
-                    Seus dados ajudam a identificar e proteger cada pedido
-                    realizado.
+                    Seus dados e histórico de compras ficam centralizados em um
+                    só lugar.
                   </p>
                 </div>
               </div>
@@ -125,7 +132,7 @@ export function CompradorLoginPage() {
               <div>
                 <h2>Entrar</h2>
 
-                <p>Acesse sua conta para continuar.</p>
+                <p>Acesse sua conta da Atlética T.I.</p>
               </div>
             </div>
 
@@ -179,7 +186,7 @@ export function CompradorLoginPage() {
                 className="buyer-auth-submit"
                 disabled={isLoading}
               >
-                <span>{isLoading ? "Entrando..." : "Entrar e continuar"}</span>
+                <span>{isLoading ? "Entrando..." : "Entrar"}</span>
 
                 {isLoading ? (
                   <span className="buyer-auth-spinner" />
@@ -207,10 +214,14 @@ export function CompradorLoginPage() {
                 Criar minha conta
               </Link>
 
-              <p className="buyer-auth-footer">
-                Sua conta é usada para identificar suas compras e facilitar o
-                acompanhamento dos pedidos.
-              </p>
+              <div className="buyer-auth-security">
+                <FiShield />
+
+                <p>
+                  Sua conta é utilizada para identificar suas compras e proteger
+                  o acesso aos seus pedidos.
+                </p>
+              </div>
             </form>
           </section>
         </div>

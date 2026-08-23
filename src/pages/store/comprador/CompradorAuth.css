@@ -73,6 +73,48 @@
   pointer-events: none;
 }
 
+.buyer-auth-security {
+  margin-top: 17px;
+
+  padding: 13px 14px;
+
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 10px;
+
+  border:
+    1px solid
+    rgba(124, 58, 237, 0.1);
+
+  border-radius: 11px;
+
+  background:
+    rgba(124, 58, 237, 0.035);
+
+  color:
+    var(--buyer-text-muted);
+}
+
+.buyer-auth-security > svg {
+  margin-top: 2px;
+
+  flex-shrink: 0;
+
+  color:
+    var(--buyer-primary);
+
+  font-size: 0.8rem;
+}
+
+.buyer-auth-security p {
+  margin: 0;
+
+  font-size: 0.61rem;
+
+  line-height: 1.55;
+}
 .buyer-auth-container {
   width: min(1180px, 100%);
 
@@ -802,6 +844,46 @@
  * TABLET
  */
 
+ .buyer-auth-layout {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(420px, 0.78fr);
+
+  align-items: stretch;
+
+  gap: 22px;
+}
+
+.buyer-auth-hero {
+  min-height: 620px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+}
+
+.buyer-auth-card {
+  min-height: 620px;
+
+  display: flex;
+
+  flex-direction: column;
+}
+
+.buyer-auth-form {
+  flex: 1;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+}
+
 @media (max-width: 960px) {
   .buyer-auth-layout,
   .buyer-auth-register-layout {
@@ -832,17 +914,16 @@
     padding: 96px 14px 55px;
   }
 
-  .buyer-auth-layout {
-    margin-top: 25px;
+    .buyer-auth-layout {
+    grid-template-columns: 1fr;
   }
 
-  .buyer-auth-hero {
+  .buyer-auth-hero,
+  .buyer-auth-card {
     min-height: auto;
-
-    padding: 44px 24px;
-
-    border-radius: 20px;
   }
+
+
 
   .buyer-auth-hero h1 {
     font-size: clamp(3rem, 15vw, 4.3rem);
