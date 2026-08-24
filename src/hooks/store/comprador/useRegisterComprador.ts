@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
-import { api } from "../../../service/api";
 
+import { api } from "../../../service/api";
 
 interface RegisterCompradorPayload {
   name: string;
@@ -16,7 +16,7 @@ interface RegisterCompradorPayload {
 interface RegisterCompradorResponse {
   message: string;
 
-  token: string;
+  requiresEmailVerification: boolean;
 
   comprador: {
     id: string;
@@ -30,10 +30,6 @@ interface RegisterCompradorResponse {
     createdAt?: string;
   };
 }
-
-const COMPRADOR_TOKEN_KEY = "@atletica-ti-client:token";
-
-export const COMPRADOR_USER_KEY = "@atletica-ti-client:user";
 
 export function useRegisterComprador() {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -111,13 +107,6 @@ export function useRegisterComprador() {
         },
       );
 
-      localStorage.setItem(COMPRADOR_TOKEN_KEY, response.data.token);
-
-      localStorage.setItem(
-        COMPRADOR_USER_KEY,
-        JSON.stringify(response.data.comprador),
-      );
-
       return response.data;
     } catch (error: unknown) {
       let message = "Não foi possível realizar o cadastro.";
@@ -125,6 +114,8 @@ export function useRegisterComprador() {
       if (typeof error === "object" && error !== null && "response" in error) {
         const requestError = error as {
           response?: {
+            status?: number;
+
             data?: {
               message?: string;
             };
@@ -144,8 +135,13 @@ export function useRegisterComprador() {
     }
   }, []);
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
     register,
+    clearError,
     isRegistering,
     error,
   };

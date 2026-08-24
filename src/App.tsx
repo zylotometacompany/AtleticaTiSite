@@ -1,4 +1,7 @@
-import { Route, Routes } from "react-router-dom";
+import {
+  Route,
+  Routes,
+} from "react-router-dom";
 
 import { MainLayout } from "./layout/MainLayout";
 import { CompradorLayout } from "./layout/CompradorLayout";
@@ -11,55 +14,86 @@ import Diretoria from "./pages/Directors/Diretoria";
 import ZCardRequest from "./pages/zCardRequest/zCardRequest";
 
 import { ProductsPage } from "./pages/store/Store";
-
 import { CheckoutPage } from "./pages/store/Checkout/Checkout";
 
 import PedidoSucessoPage from "./pages/store/PedidoSucessoPage/PedidoSucessoPage";
-
 import PedidoPendentePage from "./pages/store/PedidoPendentePage/PedidoPendentePage";
-
 import PedidoFalhaPage from "./pages/store/PedidoFalhaPage/PedidoFalhaPage";
-
 import PedidoComprovantePage from "./pages/store/PedidoComprovantePage/PedidoComprovantePage";
 
 import CompradorRegisterPage from "./pages/store/comprador/CompradorRegister";
-
 import CompradorLoginPage from "./pages/store/comprador/CompradorLogin";
-
 import MinhasCompras from "./pages/store/comprador/MinhasCompras";
+
+import VerifyEmailPage from "./pages/store/comprador/verifyEmailPage";
 
 export default function App() {
   return (
     <Routes>
       {/*
+       * ========================================
        * SITE PÚBLICO
+       * ========================================
        */}
-
       <Route element={<MainLayout />}>
-        <Route path="/" element={<Home />} />
+        <Route
+          path="/"
+          element={<Home />}
+        />
 
-        <Route path="/diretoria" element={<Diretoria />} />
+        <Route
+          path="/diretoria"
+          element={<Diretoria />}
+        />
 
-        <Route path="/eventos" element={<Events />} />
+        <Route
+          path="/eventos"
+          element={<Events />}
+        />
 
-        <Route path="/zcard" element={<ZCardRequest />} />
+        <Route
+          path="/zcard"
+          element={<ZCardRequest />}
+        />
 
-        <Route path="/loja" element={<ProductsPage />} />
+        <Route
+          path="/loja"
+          element={<ProductsPage />}
+        />
 
         {/*
-         * AUTENTICAÇÃO
-         * DO COMPRADOR
+         * ========================================
+         * AUTENTICAÇÃO DO COMPRADOR
+         * ========================================
          */}
+        <Route
+          path="/login"
+          element={<CompradorLoginPage />}
+        />
 
-        <Route path="/login" element={<CompradorLoginPage />} />
-
-        <Route path="/register" element={<CompradorRegisterPage />} />
+        <Route
+          path="/register"
+          element={<CompradorRegisterPage />}
+        />
 
         {/*
-         * RETORNOS DO
-         * MERCADO PAGO
+         * ========================================
+         * VERIFICAÇÃO DE E-MAIL
+         *
+         * IMPORTANTE:
+         * Esta rota é pública.
+         * ========================================
          */}
+        <Route
+          path="/verificar-email"
+          element={<VerifyEmailPage />}
+        />
 
+        {/*
+         * ========================================
+         * RETORNOS DO MERCADO PAGO
+         * ========================================
+         */}
         <Route
           path="/pedido/:publicToken/sucesso"
           element={<PedidoSucessoPage />}
@@ -82,30 +116,37 @@ export default function App() {
       </Route>
 
       {/*
-       * ÁREA PROTEGIDA
-       * DO COMPRADOR
+       * ========================================
+       * ÁREA PROTEGIDA DO COMPRADOR
+       * ========================================
        */}
-
-      <Route element={<CompradorProtectedRoute />}>
+      <Route
+        element={
+          <CompradorProtectedRoute />
+        }
+      >
         {/*
          * CHECKOUT
-         *
-         * Continua usando
-         * o MainLayout normal.
          */}
-
-        <Route element={<MainLayout />}>
-          <Route path="/checkout" element={<CheckoutPage />} />
+        <Route
+          element={<MainLayout />}
+        >
+          <Route
+            path="/checkout"
+            element={<CheckoutPage />}
+          />
         </Route>
 
         {/*
-         * ÁREA "MINHA CONTA"
-         *
-         * Usa layout próprio.
+         * MINHA CONTA
          */}
-
-        <Route element={<CompradorLayout />}>
-          <Route path="/minha-conta/compras" element={<MinhasCompras />} />
+        <Route
+          element={<CompradorLayout />}
+        >
+          <Route
+            path="/minha-conta/compras"
+            element={<MinhasCompras />}
+          />
         </Route>
       </Route>
     </Routes>
