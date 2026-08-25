@@ -1,6 +1,13 @@
 import { useEffect, useRef } from "react";
 
-import { FiArrowLeft, FiShield, FiShoppingBag, FiUser } from "react-icons/fi";
+import {
+  FiArrowLeft,
+  FiArrowRight,
+  FiShield,
+  FiShoppingBag,
+  FiUser,
+  FiUserPlus,
+} from "react-icons/fi";
 
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -176,12 +183,18 @@ export function CompradorLoginPage() {
 
             <div className="buyer-auth-form">
               <div className="buyer-google-login-block">
-                <strong>Acesso seguro</strong>
+                <div className="buyer-google-login-icon">
+                  <FiShield />
+                </div>
 
-                <p>Use sua conta Google para entrar ou criar seu cadastro.</p>
+                <div>
+                  <strong>Acesso seguro</strong>
 
-                <div ref={googleButtonRef} className="buyer-google-button" />
+                  <p>Use sua conta Google para entrar na plataforma.</p>
+                </div>
               </div>
+
+              <div ref={googleButtonRef} className="buyer-google-button" />
 
               {isLoading && (
                 <div className="buyer-google-loading">
@@ -198,6 +211,36 @@ export function CompradorLoginPage() {
                   <p>{error}</p>
                 </div>
               )}
+
+              <div className="buyer-auth-divider">
+                <span />
+                <p>primeiro acesso?</p>
+                <span />
+              </div>
+
+              <button
+                type="button"
+                className="buyer-create-account"
+                onClick={() =>
+                  navigate("/register", {
+                    state: {
+                      from,
+                    },
+                  })
+                }
+              >
+                <div className="buyer-create-account-icon">
+                  <FiUserPlus />
+                </div>
+
+                <div className="buyer-create-account-content">
+                  <strong>Criar uma conta</strong>
+
+                  <span>Comece seu cadastro usando sua conta Google.</span>
+                </div>
+
+                <FiArrowRight className="buyer-create-account-arrow" />
+              </button>
 
               <div className="buyer-auth-security">
                 <FiShield />

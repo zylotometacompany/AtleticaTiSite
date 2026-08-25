@@ -932,7 +932,192 @@
 
   gap: 14px;
 }
+.buyer-google-login-block {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 
+  margin-top: 28px;
+  padding: 18px;
+
+  border: 1px solid rgba(124, 58, 237, 0.14);
+
+  border-radius: 16px;
+
+  background: linear-gradient(
+    135deg,
+    rgba(124, 58, 237, 0.06),
+    rgba(168, 85, 247, 0.025)
+  );
+}
+
+.buyer-google-login-icon {
+  width: 42px;
+  height: 42px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background: rgba(124, 58, 237, 0.1);
+
+  color: #7c3aed;
+
+  font-size: 20px;
+}
+
+.buyer-google-login-block strong {
+  display: block;
+
+  color: #1d1323;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.buyer-google-login-block p {
+  margin: 4px 0 0;
+
+  color: #968a9e;
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.buyer-google-button {
+  width: 100%;
+
+  margin-top: 22px;
+
+  display: flex;
+  justify-content: center;
+
+  min-height: 44px;
+}
+
+.buyer-google-loading {
+  margin-top: 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  color: #8f8397;
+
+  font-size: 12px;
+}
+
+.buyer-google-loading p {
+  margin: 0;
+}
+
+/*
+ * CRIAR CONTA
+ */
+
+.buyer-create-account {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 17px 18px;
+
+  border: 1px solid rgba(124, 58, 237, 0.18);
+
+  border-radius: 16px;
+
+  background: rgba(124, 58, 237, 0.035);
+
+  cursor: pointer;
+
+  text-align: left;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.buyer-create-account:hover {
+  transform: translateY(-2px);
+
+  border-color: rgba(124, 58, 237, 0.38);
+
+  background: rgba(124, 58, 237, 0.07);
+
+  box-shadow: 0 14px 32px rgba(124, 58, 237, 0.09);
+}
+
+.buyer-create-account-icon {
+  width: 44px;
+  height: 44px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 13px;
+
+  background: rgba(124, 58, 237, 0.1);
+
+  color: #7c3aed;
+
+  font-size: 20px;
+}
+
+.buyer-create-account-content {
+  min-width: 0;
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+.buyer-create-account-content strong {
+  color: #6d28d9;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.buyer-create-account-content span {
+  color: #94899b;
+
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.buyer-create-account-arrow {
+  flex-shrink: 0;
+
+  color: #7c3aed;
+
+  font-size: 18px;
+
+  transition: transform 0.2s ease;
+}
+
+.buyer-create-account:hover .buyer-create-account-arrow {
+  transform: translateX(3px);
+}
+
+.buyer-auth-divider {
+  margin: 26px 0 20px;
+}
 .buyer-google-button {
   width: 100%;
   margin-top: 20px;
