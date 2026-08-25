@@ -1,7 +1,4 @@
-import {
-  Route,
-  Routes,
-} from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 
 import { MainLayout } from "./layout/MainLayout";
 import { CompradorLayout } from "./layout/CompradorLayout";
@@ -25,7 +22,7 @@ import CompradorRegisterPage from "./pages/store/comprador/CompradorRegister";
 import CompradorLoginPage from "./pages/store/comprador/CompradorLogin";
 import MinhasCompras from "./pages/store/comprador/MinhasCompras";
 
-import VerifyEmailPage from "./pages/store/comprador/verifyEmailPage";
+import CompletarCadastroPage from "./pages/store/comprador/CompletarCadastroPage";
 
 export default function App() {
   return (
@@ -36,45 +33,24 @@ export default function App() {
        * ========================================
        */}
       <Route element={<MainLayout />}>
-        <Route
-          path="/"
-          element={<Home />}
-        />
+        <Route path="/" element={<Home />} />
 
-        <Route
-          path="/diretoria"
-          element={<Diretoria />}
-        />
+        <Route path="/diretoria" element={<Diretoria />} />
 
-        <Route
-          path="/eventos"
-          element={<Events />}
-        />
+        <Route path="/eventos" element={<Events />} />
 
-        <Route
-          path="/zcard"
-          element={<ZCardRequest />}
-        />
+        <Route path="/zcard" element={<ZCardRequest />} />
 
-        <Route
-          path="/loja"
-          element={<ProductsPage />}
-        />
+        <Route path="/loja" element={<ProductsPage />} />
 
         {/*
          * ========================================
          * AUTENTICAÇÃO DO COMPRADOR
          * ========================================
          */}
-        <Route
-          path="/login"
-          element={<CompradorLoginPage />}
-        />
-
-        <Route
-          path="/register"
-          element={<CompradorRegisterPage />}
-        />
+        <Route path="/login" element={<CompradorLoginPage />} />
+        <Route path="/completar-cadastro" element={<CompletarCadastroPage />} />
+        <Route path="/register" element={<CompradorRegisterPage />} />
 
         {/*
          * ========================================
@@ -84,10 +60,6 @@ export default function App() {
          * Esta rota é pública.
          * ========================================
          */}
-        <Route
-          path="/verificar-email"
-          element={<VerifyEmailPage />}
-        />
 
         {/*
          * ========================================
@@ -120,33 +92,19 @@ export default function App() {
        * ÁREA PROTEGIDA DO COMPRADOR
        * ========================================
        */}
-      <Route
-        element={
-          <CompradorProtectedRoute />
-        }
-      >
+      <Route element={<CompradorProtectedRoute />}>
         {/*
          * CHECKOUT
          */}
-        <Route
-          element={<MainLayout />}
-        >
-          <Route
-            path="/checkout"
-            element={<CheckoutPage />}
-          />
+        <Route element={<MainLayout />}>
+          <Route path="/checkout" element={<CheckoutPage />} />
         </Route>
 
         {/*
          * MINHA CONTA
          */}
-        <Route
-          element={<CompradorLayout />}
-        >
-          <Route
-            path="/minha-conta/compras"
-            element={<MinhasCompras />}
-          />
+        <Route element={<CompradorLayout />}>
+          <Route path="/minha-conta/compras" element={<MinhasCompras />} />
         </Route>
       </Route>
     </Routes>

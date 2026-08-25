@@ -1,478 +1,626 @@
-import { useMemo, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import {
   FiArrowLeft,
-  FiArrowRight,
-  FiBookOpen,
-  FiHash,
+  FiCheckCircle,
   FiLock,
-  FiMail,
-  FiPhone,
   FiShield,
   FiShoppingBag,
-  FiUser,
 } from "react-icons/fi";
 
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+
+import { api } from "../../../service/api";
 
 import "./CompradorAuth.css";
-import { useRegisterComprador } from "../../../hooks/store/comprador/useRegisterComprador";
 
 interface LocationState {
   from?: string;
 }
 
-const courses = [
-  {
-    name: "Análise e Desenvolvimento de Sistemas",
-    semesters: 4,
-  },
-  {
-    name: "Engenharia de Software",
-    semesters: 8,
-  },
-  {
-    name: "Sistemas de Informação",
-    semesters: 8,
-  },
-  {
-    name: "Ciência da Computação",
-    semesters: 8,
-  },
-];
+
+
+interface Comprador {
+  id: string;
+  name: string;
+  email: string;
+  cpf: string;
+  phone: string | null;
+  rgm: string;
+  curso: string;
+  semestre: number;
+  atleticaId: string;
+
+  atletica?: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+}
+
+interface GoogleLoginResponse {
+  flow: "LOGIN";
+
+  token: string;
+
+  comprador: Comprador;
+}
+
+interface GoogleRegisterResponse {
+  flow: "REGISTER";
+
+  registerToken: string;
+
+  googleUser: {
+    name: string;
+    email: string;
+    picture: string | null;
+  };
+}
+
+type GoogleAuthResponse =
+  | GoogleLoginResponse
+  | GoogleRegisterResponse;
+
+
+
+const COMPRADOR_TOKEN_KEY =
+  "@atletica-ti-client:token";
+
+const COMPRADOR_USER_KEY =
+  "@atletica-ti-client:user";
+
+const GOOGLE_REGISTER_TOKEN_KEY =
+  "@atletica-ti-client:google-register-token";
+
+const GOOGLE_REGISTER_USER_KEY =
+  "@atletica-ti-client:google-register-user";
 
 export default function CompradorRegisterPage() {
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
-  const location = useLocation();
+  const location =
+    useLocation();
 
-  const { register, isRegistering, error } = useRegisterComprador();
-
-  const [name, setName] = useState("");
-
-  const [email, setEmail] = useState("");
-
-  const [cpf, setCpf] = useState("");
-
-  const [phone, setPhone] = useState("");
-
-  const [rgm, setRgm] = useState("");
-
-  const [curso, setCurso] = useState("");
-
-  const [semestre, setSemestre] = useState("");
-
-  const [password, setPassword] = useState("");
-
-  const [confirmPassword, setConfirmPassword] = useState("");
-
-  const [localError, setLocalError] = useState<string | null>(null);
-
-  const state = location.state as LocationState | null;
-
-  const from = state?.from ?? "/loja";
-
-  const selectedCourse = useMemo(() => {
-    return courses.find((item) => item.name === curso);
-  }, [curso]);
-
-  const semesters = useMemo(() => {
-    if (!selectedCourse) {
-      return [];
-    }
-
-    return Array.from(
-      {
-        length: selectedCourse.semesters,
-      },
-      (_, index) => index + 1,
+  const googleButtonRef =
+    useRef<HTMLDivElement | null>(
+      null,
     );
-  }, [selectedCourse]);
 
-  function formatCpf(value: string) {
-    return value
-      .replace(/\D/g, "")
-      .slice(0, 11)
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-  }
+  const [
+    isGoogleLoading,
+    setIsGoogleLoading,
+  ] =
+    useState(false);
 
-  function formatPhone(value: string) {
-    return value
-      .replace(/\D/g, "")
-      .slice(0, 11)
-      .replace(/^(\d{2})(\d)/, "($1) $2")
-      .replace(/(\d{5})(\d)/, "$1-$2");
-  }
+  const [
+    error,
+    setError,
+  ] =
+    useState<string | null>(
+      null,
+    );
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const state =
+    location.state as
+      | LocationState
+      | null;
 
-    setLocalError(null);
+  const from =
+    state?.from ??
+    "/minha-conta/compras";
 
-    if (!curso) {
-      setLocalError("Selecione o curso.");
-
-      return;
-    }
-
-    if (!semestre) {
-      setLocalError("Selecione o semestre.");
-
-      return;
-    }
-
-    if (password.length < 6) {
-      setLocalError("A senha deve possuir pelo menos 6 caracteres.");
-
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setLocalError("As senhas não coincidem.");
-
-      return;
-    }
-
+  /*
+   * ========================================
+   * RESPOSTA DO GOOGLE
+   * ========================================
+   */
+  async function handleGoogleCredential(
+    credential: string,
+  ) {
     try {
-      await register({
-        name: name.trim(),
+      setIsGoogleLoading(
+        true,
+      );
 
-        email: email.trim(),
+      setError(null);
 
-        cpf,
+      const response =
+        await api.post<GoogleAuthResponse>(
+          "/comprador/auth/google",
+          {
+            credential,
+          },
+        );
 
-        phone,
-
-        rgm: rgm.trim(),
-
-        curso,
-
-        semestre: Number(semestre),
-
-        password,
-      });
-
-      navigate(from, {
-        replace: true,
-      });
-    } catch {
       /*
-       * O hook controla
-       * os erros da API.
+       * ========================================
+       * COMPRADOR JÁ EXISTE
+       *
+       * GOOGLE FUNCIONA COMO LOGIN
+       * ========================================
        */
+      if (
+        response.data.flow ===
+        "LOGIN"
+      ) {
+        localStorage.setItem(
+          COMPRADOR_TOKEN_KEY,
+          response.data.token,
+        );
+
+        localStorage.setItem(
+          COMPRADOR_USER_KEY,
+          JSON.stringify(
+            response.data
+              .comprador,
+          ),
+        );
+
+        navigate(
+          from,
+          {
+            replace: true,
+          },
+        );
+
+        return;
+      }
+
+      /*
+       * ========================================
+       * NOVO COMPRADOR
+       *
+       * GUARDA TOKEN TEMPORÁRIO
+       * E IDENTIDADE GOOGLE
+       * ========================================
+       */
+      localStorage.setItem(
+        GOOGLE_REGISTER_TOKEN_KEY,
+        response.data
+          .registerToken,
+      );
+
+      localStorage.setItem(
+        GOOGLE_REGISTER_USER_KEY,
+        JSON.stringify(
+          response.data
+            .googleUser,
+        ),
+      );
+
+      navigate(
+        "/completar-cadastro",
+        {
+          state: {
+            from,
+
+            googleUser:
+              response.data
+                .googleUser,
+          },
+        },
+      );
+    } catch (
+      requestError: unknown
+    ) {
+      let message =
+        "Não foi possível continuar com o Google.";
+
+      if (
+        typeof requestError ===
+          "object" &&
+        requestError !== null &&
+        "response" in
+          requestError
+      ) {
+        const apiError =
+          requestError as {
+            response?: {
+              data?: {
+                message?: string;
+              };
+            };
+          };
+
+        message =
+          apiError.response
+            ?.data?.message ??
+          message;
+      } else if (
+        requestError instanceof
+        Error
+      ) {
+        message =
+          requestError.message;
+      }
+
+      setError(
+        message,
+      );
+    } finally {
+      setIsGoogleLoading(
+        false,
+      );
     }
   }
 
-  function handleBack() {
-    navigate("/loja");
-  }
+  /*
+   * ========================================
+   * INICIALIZA GOOGLE IDENTITY SERVICES
+   * ========================================
+   */
+  useEffect(() => {
+    const googleClientId =
+      import.meta.env
+        .VITE_GOOGLE_CLIENT_ID;
 
-  const displayedError = localError ?? error;
+    if (
+      !googleClientId
+    ) {
+      setError(
+        "Google Client ID não configurado.",
+      );
+
+      return;
+    }
+
+    let attempts = 0;
+
+    const initializeGoogle =
+      () => {
+        /*
+         * SCRIPT AINDA NÃO
+         * TERMINOU DE CARREGAR
+         */
+        if (
+          !window.google
+            ?.accounts?.id
+        ) {
+          attempts += 1;
+
+          if (
+            attempts < 20
+          ) {
+            window.setTimeout(
+              initializeGoogle,
+              250,
+            );
+
+            return;
+          }
+
+          setError(
+            "Não foi possível carregar a autenticação do Google.",
+          );
+
+          return;
+        }
+
+        if (
+          !googleButtonRef.current
+        ) {
+          return;
+        }
+
+        window.google.accounts.id.initialize({
+          client_id:
+            googleClientId,
+
+          callback:
+            (
+              googleResponse,
+            ) => {
+              void handleGoogleCredential(
+                googleResponse
+                  .credential,
+              );
+            },
+        });
+
+        /*
+         * EVITA DUPLICAR BOTÃO
+         * EM HOT RELOAD
+         */
+        googleButtonRef.current.innerHTML =
+          "";
+
+        const width =
+          Math.min(
+            googleButtonRef
+              .current
+              .clientWidth ||
+              360,
+
+            400,
+          );
+
+        window.google.accounts.id.renderButton(
+          googleButtonRef.current,
+          {
+            theme:
+              "outline",
+
+            size:
+              "large",
+
+            text:
+              "continue_with",
+
+            shape:
+              "rectangular",
+
+            width,
+          },
+        );
+      };
+
+    initializeGoogle();
+  }, []);
+
+  /*
+   * ========================================
+   * VOLTAR
+   * ========================================
+   */
+  function handleBack() {
+    navigate(
+      "/loja",
+    );
+  }
 
   return (
-    <main className="buyer-auth-page buyer-auth-register-page">
-      <div className="buyer-auth-grid" />
+    <main
+      className="
+        buyer-auth-page
+        buyer-auth-register-page
+      "
+    >
+      <div
+        className="buyer-auth-grid"
+      />
 
-      <div className="buyer-auth-container">
-        <button type="button" className="buyer-auth-back" onClick={handleBack}>
+      <div
+        className="buyer-auth-container"
+      >
+        <button
+          type="button"
+          className="buyer-auth-back"
+          onClick={
+            handleBack
+          }
+        >
           <FiArrowLeft />
+
           Voltar para a loja
         </button>
 
-        <div className="buyer-auth-layout buyer-auth-register-layout">
-          <section className="buyer-auth-hero">
-            <span className="buyer-auth-eyebrow">Atlética T.I. Store</span>
+        <div
+          className="
+            buyer-auth-layout
+            buyer-auth-register-layout
+          "
+        >
+          {/*
+           * ========================================
+           * HERO
+           * ========================================
+           */}
+          <section
+            className="buyer-auth-hero"
+          >
+            <span
+              className="buyer-auth-eyebrow"
+            >
+              Atlética T.I.
+              Store
+            </span>
 
             <h1>
-              Crie sua <em>conta.</em>
+              Sua conta começa{" "}
+              <em>
+                com você.
+              </em>
             </h1>
 
-            <p className="buyer-auth-description">
-              Faça seu cadastro para comprar, identificar seus pedidos e
-              acompanhar cada etapa da compra.
+            <p
+              className="buyer-auth-description"
+            >
+              Use sua conta
+              Google para
+              confirmar sua
+              identidade e
+              continuar seu
+              cadastro na
+              Atlética T.I.
             </p>
 
-            <div className="buyer-auth-benefits">
-              <div className="buyer-auth-benefit">
-                <span>
-                  <FiShoppingBag />
-                </span>
-
-                <div>
-                  <strong>Histórico de compras</strong>
-
-                  <p>Seus pedidos ficam associados ao seu cadastro.</p>
-                </div>
-              </div>
-
-              <div className="buyer-auth-benefit">
+            <div
+              className="buyer-auth-benefits"
+            >
+              <div
+                className="buyer-auth-benefit"
+              >
                 <span>
                   <FiShield />
                 </span>
 
                 <div>
-                  <strong>Mais segurança</strong>
+                  <strong>
+                    E-mail
+                    verificado
+                  </strong>
 
                   <p>
-                    A autenticação ajuda a identificar e proteger cada compra
-                    realizada.
+                    Sua conta
+                    Google confirma
+                    automaticamente
+                    seu endereço de
+                    e-mail.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                className="buyer-auth-benefit"
+              >
+                <span>
+                  <FiShoppingBag />
+                </span>
+
+                <div>
+                  <strong>
+                    Suas compras
+                  </strong>
+
+                  <p>
+                    Seus pedidos
+                    ficam vinculados
+                    à sua conta.
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="buyer-auth-orb buyer-auth-orb-one" />
+            <div
+              className="
+                buyer-auth-orb
+                buyer-auth-orb-one
+              "
+            />
 
-            <div className="buyer-auth-orb buyer-auth-orb-two" />
+            <div
+              className="
+                buyer-auth-orb
+                buyer-auth-orb-two
+              "
+            />
           </section>
 
-          <section className="buyer-auth-card">
-            <div className="buyer-auth-card-header">
-              <span className="buyer-auth-card-icon">
-                <FiUser />
+          {/*
+           * ========================================
+           * CARD GOOGLE
+           * ========================================
+           */}
+          <section
+            className="buyer-auth-card"
+          >
+            <div
+              className="buyer-auth-card-header"
+            >
+              <span
+                className="buyer-auth-card-icon"
+              >
+                <FiLock />
               </span>
 
               <div>
-                <h2>Criar conta</h2>
+                <h2>
+                  Criar conta
+                </h2>
 
-                <p>Preencha seus dados para continuar.</p>
+                <p>
+                  Primeiro,
+                  confirme sua
+                  identidade.
+                </p>
               </div>
             </div>
 
-            <form className="buyer-auth-form" onSubmit={handleSubmit}>
-              <div className="buyer-auth-field">
-                <label htmlFor="buyer-register-name">Nome completo</label>
+            <div
+              className="buyer-auth-form"
+            >
+              <div
+                className="buyer-google-intro"
+              >
+                <div
+                  className="buyer-google-check"
+                >
+                  <FiCheckCircle />
+                </div>
 
-                <div className="buyer-auth-input">
-                  <FiUser />
+                <div>
+                  <strong>
+                    Continue com
+                    sua conta
+                    Google
+                  </strong>
 
-                  <input
-                    id="buyer-register-name"
-                    type="text"
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
-                    placeholder="Digite seu nome completo"
-                    autoComplete="name"
-                    required
-                  />
+                  <p>
+                    Seu nome e
+                    e-mail serão
+                    obtidos da
+                    conta Google.
+                    Depois você
+                    informará CPF,
+                    RGM, curso e
+                    semestre.
+                  </p>
                 </div>
               </div>
 
-              <div className="buyer-auth-field">
-                <label htmlFor="buyer-register-email">E-mail</label>
+              {/*
+               * GOOGLE RENDERIZA
+               * O BOTÃO AQUI
+               */}
+              <div
+                className="buyer-google-button-wrapper"
+              >
+                <div
+                  ref={
+                    googleButtonRef
+                  }
+                  className="buyer-google-button"
+                />
 
-                <div className="buyer-auth-input">
-                  <FiMail />
-
-                  <input
-                    id="buyer-register-email"
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    placeholder="nome@email.com"
-                    autoComplete="email"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="buyer-auth-form-grid">
-                <div className="buyer-auth-field">
-                  <label htmlFor="buyer-register-cpf">CPF</label>
-
-                  <div className="buyer-auth-input">
-                    <span className="buyer-auth-text-icon">CPF</span>
-
-                    <input
-                      id="buyer-register-cpf"
-                      type="text"
-                      value={cpf}
-                      onChange={(event) =>
-                        setCpf(formatCpf(event.target.value))
-                      }
-                      placeholder="000.000.000-00"
-                      inputMode="numeric"
-                      maxLength={14}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="buyer-auth-field">
-                  <label htmlFor="buyer-register-phone">Telefone</label>
-
-                  <div className="buyer-auth-input">
-                    <FiPhone />
-
-                    <input
-                      id="buyer-register-phone"
-                      type="tel"
-                      value={phone}
-                      onChange={(event) =>
-                        setPhone(formatPhone(event.target.value))
-                      }
-                      placeholder="(11) 99999-9999"
-                      autoComplete="tel"
-                      maxLength={15}
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="buyer-auth-form-grid">
-                <div className="buyer-auth-field">
-                  <label htmlFor="buyer-register-rgm">RGM</label>
-
-                  <div className="buyer-auth-input">
-                    <FiHash />
-
-                    <input
-                      id="buyer-register-rgm"
-                      type="text"
-                      value={rgm}
-                      onChange={(event) =>
-                        setRgm(event.target.value.replace(/\D/g, ""))
-                      }
-                      placeholder="Registro do aluno"
-                      inputMode="numeric"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="buyer-auth-field">
-                  <label htmlFor="buyer-register-course">Curso</label>
-
-                  <div className="buyer-auth-input buyer-auth-select">
-                    <FiBookOpen />
-
-                    <select
-                      id="buyer-register-course"
-                      value={curso}
-                      onChange={(event) => {
-                        setCurso(event.target.value);
-
-                        setSemestre("");
-                      }}
-                      required
-                    >
-                      <option value="">Selecionar curso</option>
-
-                      {courses.map((course) => (
-                        <option value={course.name} key={course.name}>
-                          {course.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div className="buyer-auth-field">
-                <label htmlFor="buyer-register-semester">Semestre</label>
-
-                <div className="buyer-auth-input buyer-auth-select">
-                  <span className="buyer-auth-text-icon">S</span>
-
-                  <select
-                    id="buyer-register-semester"
-                    value={semestre}
-                    onChange={(event) => setSemestre(event.target.value)}
-                    disabled={!curso}
-                    required
+                {isGoogleLoading && (
+                  <div
+                    className="buyer-google-loading"
                   >
-                    <option value="">
-                      {curso
-                        ? "Selecionar semestre"
-                        : "Selecione o curso primeiro"}
-                    </option>
+                    <span
+                      className="buyer-auth-spinner"
+                    />
 
-                    {semesters.map((semester) => (
-                      <option value={String(semester)} key={semester}>
-                        {semester}º semestre
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                    <p>
+                      Validando sua
+                      conta Google...
+                    </p>
+                  </div>
+                )}
               </div>
 
-              <div className="buyer-auth-form-grid">
-                <div className="buyer-auth-field">
-                  <label htmlFor="buyer-register-password">Senha</label>
+              {error && (
+                <div
+                  className="buyer-auth-error"
+                  role="alert"
+                >
+                  <strong>
+                    !
+                  </strong>
 
-                  <div className="buyer-auth-input">
-                    <FiLock />
-
-                    <input
-                      id="buyer-register-password"
-                      type="password"
-                      value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                      placeholder="Mínimo 6 caracteres"
-                      autoComplete="new-password"
-                      minLength={6}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="buyer-auth-field">
-                  <label htmlFor="buyer-register-confirm">
-                    Confirmar senha
-                  </label>
-
-                  <div className="buyer-auth-input">
-                    <FiLock />
-
-                    <input
-                      id="buyer-register-confirm"
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(event) =>
-                        setConfirmPassword(event.target.value)
-                      }
-                      placeholder="Repita sua senha"
-                      autoComplete="new-password"
-                      minLength={6}
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {displayedError && (
-                <div className="buyer-auth-error" role="alert">
-                  <strong>!</strong>
-
-                  <p>{displayedError}</p>
+                  <p>
+                    {error}
+                  </p>
                 </div>
               )}
 
-              <button
-                type="submit"
-                className="buyer-auth-submit"
-                disabled={isRegistering}
+              <div
+                className="buyer-auth-divider"
               >
-                <span>
-                  {isRegistering
-                    ? "Criando conta..."
-                    : "Criar conta e continuar"}
-                </span>
-
-                {isRegistering ? (
-                  <span className="buyer-auth-spinner" />
-                ) : (
-                  <FiArrowRight />
-                )}
-              </button>
-
-              <div className="buyer-auth-divider">
                 <span />
 
-                <p>já possui conta?</p>
+                <p>
+                  já possui conta?
+                </p>
 
                 <span />
               </div>
@@ -485,14 +633,23 @@ export default function CompradorRegisterPage() {
                 className="buyer-auth-secondary"
               >
                 <FiLock />
-                Entrar na minha conta
+
+                Entrar na minha
+                conta
               </Link>
 
-              <p className="buyer-auth-footer">
-                Seus dados serão utilizados para identificar sua conta, seus
-                pedidos e as compras realizadas na loja.
+              <p
+                className="buyer-auth-footer"
+              >
+                A Atlética T.I.
+                recebe apenas as
+                informações
+                necessárias da sua
+                conta Google para
+                identificação e
+                autenticação.
               </p>
-            </form>
+            </div>
           </section>
         </div>
       </div>

@@ -874,6 +874,225 @@
   flex-direction: column;
 }
 
+.buyer-google-intro {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+
+  padding: 18px;
+
+  border: 1px solid
+    rgba(124, 58, 237, 0.14);
+
+  border-radius: 16px;
+
+  background:
+    rgba(124, 58, 237, 0.045);
+}
+
+.buyer-google-check {
+  width: 42px;
+  height: 42px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background:
+    rgba(124, 58, 237, 0.1);
+
+  color: #7c3aed;
+
+  font-size: 20px;
+}
+
+.buyer-google-intro strong {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #1b1020;
+
+  font-size: 14px;
+}
+
+.buyer-google-intro p {
+  margin: 0;
+
+  color: #8a7f91;
+
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.buyer-google-button-wrapper {
+  position: relative;
+
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  gap: 14px;
+}
+
+.buyer-google-button {
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+
+  min-height: 44px;
+}
+
+.buyer-google-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 10px;
+
+  color: #7c7181;
+
+  font-size: 12px;
+}
+
+.buyer-google-loading p {
+  margin: 0;
+}
+.buyer-google-profile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 16px;
+
+  border:
+    1px solid
+    rgba(
+      124,
+      58,
+      237,
+      0.16
+    );
+
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(
+        124,
+        58,
+        237,
+        0.07
+      ),
+      rgba(
+        168,
+        85,
+        247,
+        0.035
+      )
+    );
+}
+
+.buyer-google-profile img,
+.buyer-google-profile-fallback {
+  width: 50px;
+  height: 50px;
+
+  flex-shrink: 0;
+
+  border-radius: 14px;
+}
+
+.buyer-google-profile img {
+  object-fit: cover;
+}
+
+.buyer-google-profile-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    linear-gradient(
+      135deg,
+      #6d28d9,
+      #a855f7
+    );
+
+  color: #ffffff;
+
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.buyer-google-profile > div {
+  min-width: 0;
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.buyer-google-profile span {
+  margin-bottom: 3px;
+
+  color: #7c3aed;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing:
+    1.2px;
+
+  text-transform:
+    uppercase;
+}
+
+.buyer-google-profile strong {
+  color: #1a1020;
+
+  font-size: 14px;
+
+  overflow: hidden;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+}
+
+.buyer-google-profile p {
+  margin: 3px 0 0;
+
+  color: #95899c;
+
+  font-size: 12px;
+
+  overflow: hidden;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+}
+
+.buyer-google-profile > svg {
+  flex-shrink: 0;
+
+  color: #16a34a;
+
+  font-size: 22px;
+}
 .buyer-auth-form {
   flex: 1;
 
