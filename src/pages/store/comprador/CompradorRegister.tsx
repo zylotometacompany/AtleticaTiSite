@@ -262,7 +262,7 @@ export default function CompradorRegisterPage() {
   useEffect(() => {
     const googleClientId =
       import.meta.env
-        .GOOGLE_CLIENT_ID;
+        .VITE_GOOGLE_CLIENT_ID;
 
     if (
       !googleClientId
