@@ -7,22 +7,20 @@ interface LoginCompradorPayload {
   password: string;
 }
 
+interface GoogleLoginPayload {
+  credential: string;
+}
+
 export interface Comprador {
   id: string;
-
   name: string;
-
   email: string;
-
   cpf: string;
-
   phone: string | null;
-
   rgm: string;
-
   curso: string;
-
   semestre: number;
+  atleticaId?: string;
 
   atletica?: {
     id: string;
@@ -33,11 +31,29 @@ export interface Comprador {
 
 interface LoginCompradorResponse {
   message: string;
-
   token: string;
-
   comprador: Comprador;
 }
+
+interface GoogleLoginResponse {
+  flow: "LOGIN";
+  token: string;
+  comprador: Comprador;
+}
+
+interface GoogleRegisterResponse {
+  flow: "REGISTER";
+  registerToken: string;
+
+  googleUser: {
+    googleSub?: string;
+    name: string;
+    email: string;
+    picture: string | null;
+  };
+}
+
+type GoogleAuthResponse = GoogleLoginResponse | GoogleRegisterResponse;
 
 interface MeCompradorResponse {
   comprador: Comprador;
@@ -47,15 +63,29 @@ export const COMPRADOR_TOKEN_KEY = "@atletica-ti-client:token";
 
 export const COMPRADOR_USER_KEY = "@atletica-ti-client:user";
 
+export const GOOGLE_REGISTER_TOKEN_KEY =
+  "@atletica-ti-client:google-register-token";
+
+export const GOOGLE_REGISTER_USER_KEY =
+  "@atletica-ti-client:google-register-user";
+
 export function useCompradorAuth() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
 
   /*
-   * LOGIN
+   * SALVA SESSÃO
    */
+  const saveSession = useCallback((token: string, comprador: Comprador) => {
+    localStorage.setItem(COMPRADOR_TOKEN_KEY, token);
 
+    localStorage.setItem(COMPRADOR_USER_KEY, JSON.stringify(comprador));
+  }, []);
+
+  /*
+   * LOGIN TRADICIONAL
+   */
   const login = useCallback(
     async ({ email, password }: LoginCompradorPayload) => {
       try {
@@ -71,6 +101,7 @@ export function useCompradorAuth() {
 
         const response = await api.post<LoginCompradorResponse>(
           "/comprador/auth/login",
+
           {
             email: normalizedEmail,
 
@@ -78,12 +109,7 @@ export function useCompradorAuth() {
           },
         );
 
-        localStorage.setItem(COMPRADOR_TOKEN_KEY, response.data.token);
-
-        localStorage.setItem(
-          COMPRADOR_USER_KEY,
-          JSON.stringify(response.data.comprador),
-        );
+        saveSession(response.data.token, response.data.comprador);
 
         return response.data;
       } catch (error: unknown) {
@@ -118,13 +144,103 @@ export function useCompradorAuth() {
         setIsLoading(false);
       }
     },
-    [],
+    [saveSession],
   );
 
   /*
-   * PERFIL DO COMPRADOR
+   * LOGIN / REGISTER
+   * COM GOOGLE
    */
+  const loginWithGoogle = useCallback(
+    async ({ credential }: GoogleLoginPayload) => {
+      try {
+        setIsLoading(true);
 
+        setError(null);
+
+        if (!credential) {
+          throw new Error("Credencial do Google não informada.");
+        }
+
+        const response = await api.post<GoogleAuthResponse>(
+          "/comprador/auth/google",
+
+          {
+            credential,
+          },
+        );
+
+        /*
+         * JÁ EXISTE
+         * → LOGIN DIRETO
+         */
+        if (response.data.flow === "LOGIN") {
+          saveSession(response.data.token, response.data.comprador);
+
+          /*
+           * LIMPA POSSÍVEL
+           * CADASTRO GOOGLE ANTIGO
+           */
+          localStorage.removeItem(GOOGLE_REGISTER_TOKEN_KEY);
+
+          localStorage.removeItem(GOOGLE_REGISTER_USER_KEY);
+
+          return response.data;
+        }
+
+        /*
+         * NÃO EXISTE
+         * → CADASTRO PENDENTE
+         */
+        localStorage.setItem(
+          GOOGLE_REGISTER_TOKEN_KEY,
+          response.data.registerToken,
+        );
+
+        localStorage.setItem(
+          GOOGLE_REGISTER_USER_KEY,
+          JSON.stringify(response.data.googleUser),
+        );
+
+        return response.data;
+      } catch (error: unknown) {
+        let message = "Não foi possível autenticar com o Google.";
+
+        if (
+          typeof error === "object" &&
+          error !== null &&
+          "response" in error
+        ) {
+          const requestError = error as {
+            response?: {
+              data?: {
+                message?: string;
+                error?: string;
+              };
+            };
+          };
+
+          message =
+            requestError.response?.data?.message ??
+            requestError.response?.data?.error ??
+            message;
+        } else if (error instanceof Error) {
+          message = error.message;
+        }
+
+        setError(message);
+
+        throw new Error(message);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [saveSession],
+  );
+
+  /*
+   * PERFIL
+   */
   const me = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -139,6 +255,7 @@ export function useCompradorAuth() {
 
       const response = await api.get<MeCompradorResponse>(
         "/comprador/auth/me",
+
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -192,11 +309,14 @@ export function useCompradorAuth() {
   /*
    * LOGOUT
    */
-
   const logout = useCallback(() => {
     localStorage.removeItem(COMPRADOR_TOKEN_KEY);
 
     localStorage.removeItem(COMPRADOR_USER_KEY);
+
+    localStorage.removeItem(GOOGLE_REGISTER_TOKEN_KEY);
+
+    localStorage.removeItem(GOOGLE_REGISTER_USER_KEY);
 
     setError(null);
   }, []);
@@ -204,7 +324,6 @@ export function useCompradorAuth() {
   /*
    * COMPRADOR SALVO
    */
-
   const getStoredComprador = useCallback((): Comprador | null => {
     const stored = localStorage.getItem(COMPRADOR_USER_KEY);
 
@@ -224,7 +343,6 @@ export function useCompradorAuth() {
   /*
    * TOKEN EXISTE?
    */
-
   const isAuthenticated = useCallback(() => {
     return Boolean(localStorage.getItem(COMPRADOR_TOKEN_KEY));
   }, []);
@@ -232,18 +350,28 @@ export function useCompradorAuth() {
   /*
    * TOKEN
    */
-
   const getToken = useCallback(() => {
     return localStorage.getItem(COMPRADOR_TOKEN_KEY);
   }, []);
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
     login,
+    loginWithGoogle,
+
     me,
+
     logout,
+
     getStoredComprador,
     getToken,
     isAuthenticated,
+
+    clearError,
+
     isLoading,
     error,
   };

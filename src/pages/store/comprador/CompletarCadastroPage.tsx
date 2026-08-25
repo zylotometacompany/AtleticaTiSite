@@ -15,7 +15,7 @@ import {
 
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { api } from "../../../service/api";
+import { useRegisterComprador } from "../../../hooks/store/comprador/useRegisterComprador";
 
 import "./CompradorAuth.css";
 
@@ -27,32 +27,7 @@ interface GoogleUser {
 
 interface LocationState {
   from?: string;
-
   googleUser?: GoogleUser;
-}
-
-interface CompleteRegisterResponse {
-  message: string;
-
-  token: string;
-
-  comprador: {
-    id: string;
-    name: string;
-    email: string;
-    cpf: string;
-    phone: string | null;
-    rgm: string;
-    curso: string;
-    semestre: number;
-    atleticaId: string;
-
-    atletica?: {
-      id: string;
-      name: string;
-      slug: string;
-    };
-  };
 }
 
 const courses = [
@@ -78,14 +53,16 @@ const GOOGLE_REGISTER_TOKEN_KEY = "@atletica-ti-client:google-register-token";
 
 const GOOGLE_REGISTER_USER_KEY = "@atletica-ti-client:google-register-user";
 
-const COMPRADOR_TOKEN_KEY = "@atletica-ti-client:token";
-
-const COMPRADOR_USER_KEY = "@atletica-ti-client:user";
-
 export default function CompletarCadastroPage() {
   const navigate = useNavigate();
 
   const location = useLocation();
+
+  const {
+    register,
+    isRegistering,
+    error: registerError,
+  } = useRegisterComprador();
 
   const state = location.state as LocationState | null;
 
@@ -107,9 +84,7 @@ export default function CompletarCadastroPage() {
 
   const [semestre, setSemestre] = useState("");
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const [error, setError] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const selectedCourse = useMemo(() => {
     return courses.find((item) => item.name === curso);
@@ -124,7 +99,6 @@ export default function CompletarCadastroPage() {
       {
         length: selectedCourse.semesters,
       },
-
       (_, index) => index + 1,
     );
   }, [selectedCourse]);
@@ -150,13 +124,13 @@ export default function CompletarCadastroPage() {
     event.preventDefault();
 
     try {
-      setError(null);
+      setLocalError(null);
 
       const registerToken = localStorage.getItem(GOOGLE_REGISTER_TOKEN_KEY);
 
-      if (!registerToken) {
+      if (!registerToken || !googleUser) {
         throw new Error(
-          "Sua validação com o Google expirou. Entre novamente com sua conta Google.",
+          "Sua autenticação com o Google expirou. Entre novamente com sua conta Google.",
         );
       }
 
@@ -180,76 +154,39 @@ export default function CompletarCadastroPage() {
         throw new Error("Selecione o semestre.");
       }
 
-      setIsSubmitting(true);
+      await register({
+        /*
+         * NOME E EMAIL
+         * JÁ VIERAM DO GOOGLE.
+         */
+        name: googleUser.name,
 
-      const response = await api.post<CompleteRegisterResponse>(
-        "/comprador/auth/complete-register",
+        email: googleUser.email,
 
-        {
-          cpf: cpf.replace(/\D/g, ""),
+        cpf,
 
-          phone: phone.replace(/\D/g, ""),
+        phone,
 
-          rgm: rgm.trim(),
+        rgm: rgm.trim(),
 
-          curso,
+        curso,
 
-          semestre: Number(semestre),
-        },
+        semestre: Number(semestre),
 
-        {
-          headers: {
-            Authorization: `Bearer ${registerToken}`,
-          },
-        },
-      );
-
-      /*
-       * CADASTRO TERMINADO.
-       * AGORA É JWT NORMAL.
-       */
-      localStorage.setItem(COMPRADOR_TOKEN_KEY, response.data.token);
-
-      localStorage.setItem(
-        COMPRADOR_USER_KEY,
-        JSON.stringify(response.data.comprador),
-      );
-
-      /*
-       * LIMPA DADOS
-       * TEMPORÁRIOS DO GOOGLE.
-       */
-      localStorage.removeItem(GOOGLE_REGISTER_TOKEN_KEY);
-
-      localStorage.removeItem(GOOGLE_REGISTER_USER_KEY);
+        registerToken,
+      });
 
       navigate(from, {
         replace: true,
       });
     } catch (requestError: unknown) {
-      let message = "Não foi possível concluir seu cadastro.";
+      if (requestError instanceof Error) {
+        setLocalError(requestError.message);
 
-      if (
-        typeof requestError === "object" &&
-        requestError !== null &&
-        "response" in requestError
-      ) {
-        const apiError = requestError as {
-          response?: {
-            data?: {
-              message?: string;
-            };
-          };
-        };
-
-        message = apiError.response?.data?.message ?? message;
-      } else if (requestError instanceof Error) {
-        message = requestError.message;
+        return;
       }
 
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
+      setLocalError("Não foi possível concluir seu cadastro.");
     }
   }
 
@@ -260,6 +197,8 @@ export default function CompletarCadastroPage() {
 
     navigate("/register");
   }
+
+  const displayedError = localError ?? registerError;
 
   return (
     <main
@@ -282,9 +221,6 @@ export default function CompletarCadastroPage() {
             buyer-auth-register-layout
           "
         >
-          {/*
-           * HERO
-           */}
           <section className="buyer-auth-hero">
             <span className="buyer-auth-eyebrow">Atlética T.I. Store</span>
 
@@ -341,9 +277,6 @@ export default function CompletarCadastroPage() {
             />
           </section>
 
-          {/*
-           * CARD
-           */}
           <section className="buyer-auth-card">
             <div className="buyer-auth-card-header">
               <span className="buyer-auth-card-icon">
@@ -358,13 +291,10 @@ export default function CompletarCadastroPage() {
             </div>
 
             <form className="buyer-auth-form" onSubmit={handleSubmit}>
-              {/*
-               * CONTA GOOGLE
-               */}
               {googleUser && (
                 <div className="buyer-google-profile">
                   {googleUser.picture ? (
-                    <img src={googleUser.picture} alt="" />
+                    <img src={googleUser.picture} alt={googleUser.name} />
                   ) : (
                     <div className="buyer-google-profile-fallback">
                       {googleUser.name.charAt(0).toUpperCase()}
@@ -383,9 +313,6 @@ export default function CompletarCadastroPage() {
                 </div>
               )}
 
-              {/*
-               * CPF + TELEFONE
-               */}
               <div className="buyer-auth-form-grid">
                 <div className="buyer-auth-field">
                   <label htmlFor="buyer-complete-cpf">CPF</label>
@@ -430,9 +357,6 @@ export default function CompletarCadastroPage() {
                 </div>
               </div>
 
-              {/*
-               * RGM + CURSO
-               */}
               <div className="buyer-auth-form-grid">
                 <div className="buyer-auth-field">
                   <label htmlFor="buyer-complete-rgm">RGM</label>
@@ -487,9 +411,6 @@ export default function CompletarCadastroPage() {
                 </div>
               </div>
 
-              {/*
-               * SEMESTRE
-               */}
               <div className="buyer-auth-field">
                 <label htmlFor="buyer-complete-semester">Semestre</label>
 
@@ -523,26 +444,26 @@ export default function CompletarCadastroPage() {
                 </div>
               </div>
 
-              {error && (
+              {displayedError && (
                 <div className="buyer-auth-error" role="alert">
                   <strong>!</strong>
 
-                  <p>{error}</p>
+                  <p>{displayedError}</p>
                 </div>
               )}
 
               <button
                 type="submit"
                 className="buyer-auth-submit"
-                disabled={isSubmitting}
+                disabled={isRegistering}
               >
                 <span>
-                  {isSubmitting
+                  {isRegistering
                     ? "Finalizando cadastro..."
                     : "Finalizar cadastro"}
                 </span>
 
-                {isSubmitting ? (
+                {isRegistering ? (
                   <span className="buyer-auth-spinner" />
                 ) : (
                   <FiArrowRight />

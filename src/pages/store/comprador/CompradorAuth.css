@@ -84,17 +84,13 @@
 
   gap: 10px;
 
-  border:
-    1px solid
-    rgba(124, 58, 237, 0.1);
+  border: 1px solid rgba(124, 58, 237, 0.1);
 
   border-radius: 11px;
 
-  background:
-    rgba(124, 58, 237, 0.035);
+  background: rgba(124, 58, 237, 0.035);
 
-  color:
-    var(--buyer-text-muted);
+  color: var(--buyer-text-muted);
 }
 
 .buyer-auth-security > svg {
@@ -102,8 +98,7 @@
 
   flex-shrink: 0;
 
-  color:
-    var(--buyer-primary);
+  color: var(--buyer-primary);
 
   font-size: 0.8rem;
 }
@@ -844,7 +839,7 @@
  * TABLET
  */
 
- .buyer-auth-layout {
+.buyer-auth-layout {
   display: grid;
 
   grid-template-columns:
@@ -881,13 +876,11 @@
 
   padding: 18px;
 
-  border: 1px solid
-    rgba(124, 58, 237, 0.14);
+  border: 1px solid rgba(124, 58, 237, 0.14);
 
   border-radius: 16px;
 
-  background:
-    rgba(124, 58, 237, 0.045);
+  background: rgba(124, 58, 237, 0.045);
 }
 
 .buyer-google-check {
@@ -902,8 +895,7 @@
 
   border-radius: 12px;
 
-  background:
-    rgba(124, 58, 237, 0.1);
+  background: rgba(124, 58, 237, 0.1);
 
   color: #7c3aed;
 
@@ -943,6 +935,7 @@
 
 .buyer-google-button {
   width: 100%;
+  margin-top: 20px;
 
   display: flex;
   justify-content: center;
@@ -972,33 +965,15 @@
 
   padding: 16px;
 
-  border:
-    1px solid
-    rgba(
-      124,
-      58,
-      237,
-      0.16
-    );
+  border: 1px solid rgba(124, 58, 237, 0.16);
 
   border-radius: 16px;
 
-  background:
-    linear-gradient(
-      135deg,
-      rgba(
-        124,
-        58,
-        237,
-        0.07
-      ),
-      rgba(
-        168,
-        85,
-        247,
-        0.035
-      )
-    );
+  background: linear-gradient(
+    135deg,
+    rgba(124, 58, 237, 0.07),
+    rgba(168, 85, 247, 0.035)
+  );
 }
 
 .buyer-google-profile img,
@@ -1020,12 +995,7 @@
   align-items: center;
   justify-content: center;
 
-  background:
-    linear-gradient(
-      135deg,
-      #6d28d9,
-      #a855f7
-    );
+  background: linear-gradient(135deg, #6d28d9, #a855f7);
 
   color: #ffffff;
 
@@ -1049,11 +1019,9 @@
   font-size: 10px;
   font-weight: 800;
 
-  letter-spacing:
-    1.2px;
+  letter-spacing: 1.2px;
 
-  text-transform:
-    uppercase;
+  text-transform: uppercase;
 }
 
 .buyer-google-profile strong {
@@ -1063,11 +1031,9 @@
 
   overflow: hidden;
 
-  text-overflow:
-    ellipsis;
+  text-overflow: ellipsis;
 
-  white-space:
-    nowrap;
+  white-space: nowrap;
 }
 
 .buyer-google-profile p {
@@ -1079,11 +1045,9 @@
 
   overflow: hidden;
 
-  text-overflow:
-    ellipsis;
+  text-overflow: ellipsis;
 
-  white-space:
-    nowrap;
+  white-space: nowrap;
 }
 
 .buyer-google-profile > svg {
@@ -1133,7 +1097,7 @@
     padding: 96px 14px 55px;
   }
 
-    .buyer-auth-layout {
+  .buyer-auth-layout {
     grid-template-columns: 1fr;
   }
 
@@ -1141,8 +1105,6 @@
   .buyer-auth-card {
     min-height: auto;
   }
-
-
 
   .buyer-auth-hero h1 {
     font-size: clamp(3rem, 15vw, 4.3rem);

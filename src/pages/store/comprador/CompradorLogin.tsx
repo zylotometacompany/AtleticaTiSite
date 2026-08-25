@@ -1,17 +1,8 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef } from "react";
 
-import {
-  FiArrowLeft,
-  FiArrowRight,
-  FiLock,
-  FiMail,
-  FiShield,
-  FiShoppingBag,
-  FiUser,
-  FiUserPlus,
-} from "react-icons/fi";
+import { FiArrowLeft, FiShield, FiShoppingBag, FiUser } from "react-icons/fi";
 
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import "./CompradorAuth.css";
 
@@ -26,36 +17,89 @@ export function CompradorLoginPage() {
 
   const location = useLocation();
 
-  const { login, isLoading, error } = useCompradorAuth();
+  const googleButtonRef = useRef<HTMLDivElement | null>(null);
 
-  const [email, setEmail] = useState("");
-
-  const [password, setPassword] = useState("");
+  const { loginWithGoogle, isLoading, error } = useCompradorAuth();
 
   const state = location.state as LocationState | null;
 
-  const from = state?.from ?? "/loja";
+  const from = state?.from ?? "/minha-conta/compras";
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  useEffect(() => {
+    const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-    try {
-      await login({
-        email: email.trim(),
-
-        password,
-      });
-
-      navigate(from, {
-        replace: true,
-      });
-    } catch {
-      /*
-       * O hook controla
-       * a mensagem de erro.
-       */
+    if (!googleClientId) {
+      return;
     }
-  }
+
+    let attempts = 0;
+
+    function initializeGoogle() {
+      if (!window.google?.accounts?.id) {
+        attempts += 1;
+
+        if (attempts < 20) {
+          window.setTimeout(initializeGoogle, 250);
+        }
+
+        return;
+      }
+
+      if (!googleButtonRef.current) {
+        return;
+      }
+
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+
+        callback: async (googleResponse) => {
+          try {
+            const result = await loginWithGoogle({
+              credential: googleResponse.credential,
+            });
+
+            if (result.flow === "LOGIN") {
+              navigate(from, {
+                replace: true,
+              });
+
+              return;
+            }
+
+            navigate("/completar-cadastro", {
+              state: {
+                from,
+
+                googleUser: result.googleUser,
+              },
+            });
+          } catch {
+            /*
+             * Hook controla erro.
+             */
+          }
+        },
+      });
+
+      googleButtonRef.current.innerHTML = "";
+
+      const width = Math.min(googleButtonRef.current.clientWidth || 360, 400);
+
+      window.google.accounts.id.renderButton(googleButtonRef.current, {
+        theme: "outline",
+
+        size: "large",
+
+        text: "continue_with",
+
+        shape: "rectangular",
+
+        width,
+      });
+    }
+
+    initializeGoogle();
+  }, [from, loginWithGoogle, navigate]);
 
   function handleBack() {
     navigate("/loja");
@@ -82,8 +126,8 @@ export function CompradorLoginPage() {
             </h1>
 
             <p className="buyer-auth-description">
-              Acesse sua conta para acompanhar seus pedidos, consultar suas
-              compras e continuar conectado à Atlética T.I.
+              Entre com sua conta Google para acessar suas compras, pedidos e
+              dados da Atlética T.I.
             </p>
 
             <div className="buyer-auth-benefits">
@@ -95,10 +139,7 @@ export function CompradorLoginPage() {
                 <div>
                   <strong>Seus pedidos</strong>
 
-                  <p>
-                    Consulte suas compras, pagamentos e o status dos seus
-                    pedidos.
-                  </p>
+                  <p>Consulte suas compras e acompanhe cada pedido.</p>
                 </div>
               </div>
 
@@ -110,10 +151,7 @@ export function CompradorLoginPage() {
                 <div>
                   <strong>Sua conta</strong>
 
-                  <p>
-                    Seus dados e histórico de compras ficam centralizados em um
-                    só lugar.
-                  </p>
+                  <p>Acesso rápido usando sua conta Google.</p>
                 </div>
               </div>
             </div>
@@ -126,52 +164,32 @@ export function CompradorLoginPage() {
           <section className="buyer-auth-card">
             <div className="buyer-auth-card-header">
               <span className="buyer-auth-card-icon">
-                <FiLock />
+                <FiUser />
               </span>
 
               <div>
                 <h2>Entrar</h2>
 
-                <p>Acesse sua conta da Atlética T.I.</p>
+                <p>Continue com sua conta Google.</p>
               </div>
             </div>
 
-            <form className="buyer-auth-form" onSubmit={handleSubmit}>
-              <div className="buyer-auth-field">
-                <label htmlFor="buyer-login-email">E-mail</label>
+            <div className="buyer-auth-form">
+              <div className="buyer-google-login-block">
+                <strong>Acesso seguro</strong>
 
-                <div className="buyer-auth-input">
-                  <FiMail />
+                <p>Use sua conta Google para entrar ou criar seu cadastro.</p>
 
-                  <input
-                    id="buyer-login-email"
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    placeholder="nome@email.com"
-                    autoComplete="email"
-                    required
-                  />
-                </div>
+                <div ref={googleButtonRef} className="buyer-google-button" />
               </div>
 
-              <div className="buyer-auth-field">
-                <label htmlFor="buyer-login-password">Senha</label>
+              {isLoading && (
+                <div className="buyer-google-loading">
+                  <span className="buyer-auth-spinner" />
 
-                <div className="buyer-auth-input">
-                  <FiLock />
-
-                  <input
-                    id="buyer-login-password"
-                    type="password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    placeholder="Digite sua senha"
-                    autoComplete="current-password"
-                    required
-                  />
+                  <p>Validando sua conta...</p>
                 </div>
-              </div>
+              )}
 
               {error && (
                 <div className="buyer-auth-error" role="alert">
@@ -181,48 +199,15 @@ export function CompradorLoginPage() {
                 </div>
               )}
 
-              <button
-                type="submit"
-                className="buyer-auth-submit"
-                disabled={isLoading}
-              >
-                <span>{isLoading ? "Entrando..." : "Entrar"}</span>
-
-                {isLoading ? (
-                  <span className="buyer-auth-spinner" />
-                ) : (
-                  <FiArrowRight />
-                )}
-              </button>
-
-              <div className="buyer-auth-divider">
-                <span />
-
-                <p>ou</p>
-
-                <span />
-              </div>
-
-              <Link
-                to="/register"
-                state={{
-                  from,
-                }}
-                className="buyer-auth-secondary"
-              >
-                <FiUserPlus />
-                Criar minha conta
-              </Link>
-
               <div className="buyer-auth-security">
                 <FiShield />
 
                 <p>
-                  Sua conta é utilizada para identificar suas compras e proteger
-                  o acesso aos seus pedidos.
+                  O Google confirma sua identidade e seu e-mail antes do acesso
+                  à plataforma.
                 </p>
               </div>
-            </form>
+            </div>
           </section>
         </div>
       </div>
