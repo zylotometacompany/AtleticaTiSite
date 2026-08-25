@@ -923,11 +923,11 @@
 
 .buyer-google-button-wrapper {
   position: relative;
+  flex-direction: column;
 
   width: 100%;
 
   display: flex;
-  flex-direction: column;
   align-items: center;
 
   gap: 14px;
