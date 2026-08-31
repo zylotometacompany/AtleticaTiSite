@@ -48,6 +48,11 @@ interface PurchaseResponse {
   purchase: CompradorPurchase;
 }
 
+interface CancelPurchaseResponse {
+  message: string;
+  purchase: CompradorPurchase;
+}
+
 const COMPRADOR_TOKEN_KEY = "@atletica-ti-client:token";
 
 export function useCompradorPurchases() {
@@ -56,6 +61,8 @@ export function useCompradorPurchases() {
   const [purchase, setPurchase] = useState<CompradorPurchase | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const [isCancelling, setIsCancelling] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -140,14 +147,16 @@ export function useCompradorPurchases() {
       setIsLoading(true);
       setError(null);
 
-      if (!publicToken.trim()) {
+      const normalizedToken = publicToken.trim();
+
+      if (!normalizedToken) {
         throw new Error("Pedido não informado.");
       }
 
       const token = getToken();
 
       const response = await api.get<PurchaseResponse>(
-        `/comprador/store/purchases/${publicToken}`,
+        `/comprador/store/purchases/${normalizedToken}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -172,22 +181,114 @@ export function useCompradorPurchases() {
     }
   }, []);
 
+  /*
+   * CANCELA UMA COMPRA
+   */
+  const cancelPurchase = useCallback(async (publicToken: string) => {
+    try {
+      setIsCancelling(true);
+
+      setError(null);
+
+      const normalizedToken = publicToken.trim();
+
+      if (!normalizedToken) {
+        throw new Error("Pedido não informado.");
+      }
+
+      const token = getToken();
+
+      const response = await api.patch<CancelPurchaseResponse>(
+        `/comprador/store/purchases/${normalizedToken}/cancel`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const cancelledPurchase = response.data.purchase;
+
+      /*
+       * ATUALIZA PEDIDO
+       * ABERTO
+       */
+      setPurchase((currentPurchase) => {
+        if (!currentPurchase) {
+          return null;
+        }
+
+        if (currentPurchase.publicToken !== normalizedToken) {
+          return currentPurchase;
+        }
+
+        return {
+          ...currentPurchase,
+          ...cancelledPurchase,
+        };
+      });
+
+      /*
+       * ATUALIZA LISTAGEM
+       * SEM PRECISAR FAZER
+       * NOVO GET
+       */
+      setPurchases((currentPurchases) =>
+        currentPurchases.map((currentPurchase) =>
+          currentPurchase.publicToken === normalizedToken
+            ? {
+                ...currentPurchase,
+                ...cancelledPurchase,
+              }
+            : currentPurchase,
+        ),
+      );
+
+      return response.data;
+    } catch (error: unknown) {
+      const message = getErrorMessage(
+        error,
+        "Não foi possível cancelar o pedido.",
+      );
+
+      setError(message);
+
+      throw new Error(message);
+    } finally {
+      setIsCancelling(false);
+    }
+  }, []);
+
   function clearPurchase() {
     setPurchase(null);
   }
 
+  function clearError() {
+    setError(null);
+  }
+
   return {
-    // dados
+    /*
+     * DADOS
+     */
     purchases,
     purchase,
 
-    // ações
+    /*
+     * AÇÕES
+     */
     loadPurchases,
     loadPurchase,
+    cancelPurchase,
     clearPurchase,
+    clearError,
 
-    // estado
+    /*
+     * ESTADOS
+     */
     isLoading,
+    isCancelling,
     error,
   };
 }

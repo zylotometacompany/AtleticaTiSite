@@ -287,8 +287,6 @@
   color: #b45309;
 }
 
-
-
 .purchase-card-expanded {
   padding: 0;
 
@@ -310,30 +308,23 @@
 }
 
 .purchase-status-area small {
-  color:
-    rgba(52, 28, 66, 0.48);
+  color: rgba(52, 28, 66, 0.48);
 
   font-size: 0.6rem;
 }
 
 .purchase-items-list {
-  border-top:
-    1px solid
-    rgba(91, 33, 182, 0.1);
+  border-top: 1px solid rgba(91, 33, 182, 0.1);
 
-  border-bottom:
-    1px solid
-    rgba(91, 33, 182, 0.1);
+  border-bottom: 1px solid rgba(91, 33, 182, 0.1);
 
-  background:
-    rgba(124, 58, 237, 0.025);
+  background: rgba(124, 58, 237, 0.025);
 }
 
 .purchase-item-row {
   min-height: 82px;
 
-  padding:
-    15px 22px;
+  padding: 15px 22px;
 
   display: flex;
 
@@ -343,9 +334,7 @@
 
   gap: 24px;
 
-  border-bottom:
-    1px solid
-    rgba(91, 33, 182, 0.08);
+  border-bottom: 1px solid rgba(91, 33, 182, 0.08);
 }
 
 .purchase-item-row:last-child {
@@ -374,8 +363,7 @@
 
   border-radius: 10px;
 
-  background:
-    rgba(124, 58, 237, 0.08);
+  background: rgba(124, 58, 237, 0.08);
 
   color: #7c3aed;
 
@@ -389,8 +377,7 @@
 .purchase-item-main > div > strong {
   display: block;
 
-  color:
-    #14091d;
+  color: #14091d;
 
   font-size: 0.76rem;
 
@@ -408,27 +395,21 @@
 }
 
 .purchase-item-meta span {
-  padding:
-    5px 7px;
+  padding: 5px 7px;
 
-  border:
-    1px solid
-    rgba(91, 33, 182, 0.1);
+  border: 1px solid rgba(91, 33, 182, 0.1);
 
   border-radius: 7px;
 
-  background:
-    rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.65);
 
-  color:
-    rgba(52, 28, 66, 0.5);
+  color: rgba(52, 28, 66, 0.5);
 
   font-size: 0.58rem;
 }
 
 .purchase-item-meta strong {
-  color:
-    #14091d;
+  color: #14091d;
 
   font-weight: 800;
 }
@@ -446,8 +427,7 @@
 }
 
 .purchase-item-price span {
-  color:
-    rgba(52, 28, 66, 0.48);
+  color: rgba(52, 28, 66, 0.48);
 
   font-size: 0.58rem;
 }
@@ -461,23 +441,17 @@
 }
 
 .purchase-card-footer {
-  padding:
-    16px 22px;
+  padding: 16px 22px;
 
   display: grid;
 
-  grid-template-columns:
-    repeat(
-      3,
-      minmax(0, 1fr)
-    );
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 
   gap: 10px;
 }
 
 .purchase-card-footer > div {
-  padding:
-    11px 12px;
+  padding: 11px 12px;
 
   display: flex;
 
@@ -485,19 +459,15 @@
 
   gap: 5px;
 
-  border:
-    1px solid
-    rgba(91, 33, 182, 0.09);
+  border: 1px solid rgba(91, 33, 182, 0.09);
 
   border-radius: 10px;
 
-  background:
-    rgba(255, 255, 255, 0.52);
+  background: rgba(255, 255, 255, 0.52);
 }
 
 .purchase-card-footer span {
-  color:
-    rgba(52, 28, 66, 0.48);
+  color: rgba(52, 28, 66, 0.48);
 
   font-size: 0.55rem;
 
@@ -505,8 +475,7 @@
 }
 
 .purchase-card-footer strong {
-  color:
-    #14091d;
+  color: #14091d;
 
   font-size: 0.67rem;
 
@@ -518,21 +487,13 @@
 
   margin-top: 20px;
 
-  padding:
-    0 18px;
+  padding: 0 18px;
 
-  border:
-    1px solid
-    rgba(124, 58, 237, 0.3);
+  border: 1px solid rgba(124, 58, 237, 0.3);
 
   border-radius: 10px;
 
-  background:
-    linear-gradient(
-      135deg,
-      #5b21b6,
-      #7c3aed
-    );
+  background: linear-gradient(135deg, #5b21b6, #7c3aed);
 
   color: #ffffff;
 
@@ -545,9 +506,7 @@
   cursor: pointer;
 }
 
-@media (
-  max-width: 720px
-) {
+@media (max-width: 720px) {
   .purchase-card-header {
     align-items: flex-start;
 
@@ -571,8 +530,7 @@
   }
 
   .purchase-card-footer {
-    grid-template-columns:
-      1fr;
+    grid-template-columns: 1fr;
   }
 }
 
@@ -647,5 +605,68 @@
     width: 100%;
 
     justify-content: space-between;
+  }
+}
+.purchase-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 18px;
+  margin-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.purchase-pay-button,
+.purchase-cancel-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 16px;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.purchase-pay-button {
+  background: #7c3aed;
+  color: #fff;
+}
+
+.purchase-cancel-button {
+  background: rgba(239, 68, 68, 0.12);
+
+  color: #ef4444;
+
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.purchase-pay-button:hover,
+.purchase-cancel-button:hover {
+  transform: translateY(-1px);
+}
+
+.purchase-cancel-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 600px) {
+  .purchase-actions {
+    flex-direction: column;
+  }
+
+  .purchase-pay-button,
+  .purchase-cancel-button {
+    width: 100%;
   }
 }

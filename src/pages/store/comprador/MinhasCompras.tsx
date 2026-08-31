@@ -5,11 +5,13 @@ import {
   FiClock,
   FiPackage,
   FiShoppingBag,
+  FiXCircle,
 } from "react-icons/fi";
 
 import { useNavigate } from "react-router-dom";
 
 import "./MinhasCompras.css";
+
 import { useCompradorPurchases } from "../../../hooks/store/comprador/useCompradorPurchase";
 
 function formatCurrency(value: number) {
@@ -68,6 +70,9 @@ function getStatusIcon(status: string) {
     case "PENDENTE":
       return <FiClock />;
 
+    case "CANCELADA":
+      return <FiXCircle />;
+
     default:
       return <FiPackage />;
   }
@@ -84,8 +89,14 @@ function getTotalItems(
 export default function MinhasCompras() {
   const navigate = useNavigate();
 
-  const { purchases, loadPurchases, isLoading, error } =
-    useCompradorPurchases();
+  const {
+    purchases,
+    loadPurchases,
+    cancelPurchase,
+    isLoading,
+    isCancelling,
+    error,
+  } = useCompradorPurchases();
 
   useEffect(() => {
     loadPurchases().catch(() => {
@@ -96,10 +107,28 @@ export default function MinhasCompras() {
     });
   }, [loadPurchases]);
 
-  const totalSpent = purchases.reduce(
-    (total, purchase) => total + Number(purchase.total),
-    0,
-  );
+  async function handleCancelPurchase(publicToken: string) {
+    const confirmed = window.confirm(
+      "Tem certeza que deseja cancelar este pedido?",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await cancelPurchase(publicToken);
+    } catch {
+      /*
+       * O hook já salva
+       * a mensagem em error.
+       */
+    }
+  }
+
+  const totalSpent = purchases
+    .filter((purchase) => purchase.status !== "CANCELADA")
+    .reduce((total, purchase) => total + Number(purchase.total), 0);
 
   if (isLoading) {
     return (
@@ -149,12 +178,12 @@ export default function MinhasCompras() {
 
       {error && (
         <div className="purchases-error" role="alert">
-          <strong>Não foi possível carregar suas compras.</strong>
+          <strong>Não foi possível concluir a operação.</strong>
 
           <p>{error}</p>
 
           <button type="button" onClick={() => loadPurchases()}>
-            Tentar novamente
+            Atualizar compras
           </button>
         </div>
       )}
@@ -193,6 +222,8 @@ export default function MinhasCompras() {
         ) : (
           purchases.map((purchase) => {
             const totalItems = getTotalItems(purchase.items);
+
+            const isPending = purchase.status === "PENDENTE";
 
             return (
               <article
@@ -283,6 +314,34 @@ export default function MinhasCompras() {
                     <strong>{formatCurrency(Number(purchase.total))}</strong>
                   </div>
                 </div>
+
+                {isPending && (
+                  <div className="purchase-actions">
+                    {purchase.paymentUrl && (
+                      <button
+                        type="button"
+                        className="purchase-pay-button"
+                        onClick={() => {
+                          window.location.href = purchase.paymentUrl!;
+                        }}
+                      >
+                        <FiClock />
+                        Continuar pagamento
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      className="purchase-cancel-button"
+                      disabled={isCancelling}
+                      onClick={() => handleCancelPurchase(purchase.publicToken)}
+                    >
+                      <FiXCircle />
+
+                      {isCancelling ? "Cancelando..." : "Cancelar pedido"}
+                    </button>
+                  </div>
+                )}
               </article>
             );
           })
