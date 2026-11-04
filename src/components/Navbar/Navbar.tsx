@@ -31,11 +31,11 @@ const navigation = [
     path: "/",
   },
 
-  {
+/*   {
     label: "Diretoria",
     path: "/diretoria",
   },
-
+ */
   // {
   //   label: "Eventos",
   //   path: "/eventos",
